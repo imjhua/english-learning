@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { GoogleGenAI, Type, Schema, Modality } from "@google/genai";
 import { RhythmAnalysisResult, SentenceAnalysisResult } from "../types";
 
 const apiKey = process.env.API_KEY || '';
@@ -191,6 +191,43 @@ export const analyzeSentenceStructure = async (
     return JSON.parse(cleanJsonString(response.text)) as SentenceAnalysisResult;
   } catch (error) {
     console.error("Analysis Error:", error);
+    throw error;
+  }
+};
+
+
+
+/**
+ * Step 3: Generate Speech (TTS)
+ * Converts text to speech using Gemini's audio generation capabilities.
+ */
+export const generateSpeech = async (text: string): Promise<string> => {
+  const model = "gemini-2.5-flash-preview-tts";
+  
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: { parts: [{ text }] },
+      config: {
+        responseModalities: [Modality.AUDIO],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: 'Kore' },
+          },
+        },
+      },
+    });
+
+    // Extract base64 audio data
+    const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+
+    if (!audioData) {
+      throw new Error("No audio data returned from AI");
+    }
+
+    return audioData;
+  } catch (error) {
+    console.error("Speech Generation Error:", error);
     throw error;
   }
 };

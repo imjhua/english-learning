@@ -155,7 +155,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
           onChange={(e) => processFiles(e.target.files)}
           className="hidden"
           accept="image/*"
-          capture="environment" 
+         
         />
       </div>
 

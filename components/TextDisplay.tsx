@@ -1,16 +1,18 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useImperativeHandle } from 'react';
 import { generateSpeech } from '../services/geminiService';
 import { TextBlock } from '../types';
 import { FileText, Loader2, Volume2, Square } from 'lucide-react';
 
-interface TextDisplayProps {
+
+export interface TextDisplayProps {
   blocks: TextBlock[];
   onSentenceClick: (sentence: string) => void;
   isAnalzying: boolean;
+  onAudioPrepared?: () => void; // 오디오 준비 완료 콜백
 }
 
-const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAnalzying }) => {
+const TextDisplay = React.forwardRef<any, TextDisplayProps>(({ blocks, onSentenceClick, isAnalzying, onAudioPrepared }, ref) => {
   // 전체 텍스트 합치기 (리듬 마커 포함)
   const getAllText = () =>
     blocks.map(block =>
@@ -22,6 +24,9 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  const audioBufferRef = useRef<AudioBuffer | null>(null); // 전체 오디오 버퍼 저장
+  const startOffsetRef = useRef<number>(0); // 정지 시점(초)
+  const startTimeRef = useRef<number>(0); // 재생 시작 시점(오디오 컨텍스트 기준)
 
   // base64 → Uint8Array 변환
   function base64ToUint8Array(base64: string): Uint8Array {
@@ -55,6 +60,15 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
   // 오디오 정지
   const stopAudio = () => {
     if (sourceNodeRef.current) {
+      // 현재 재생 위치 계산
+      if (audioContextRef.current && audioBufferRef.current && isPlayingAudio) {
+        const elapsed = audioContextRef.current.currentTime - startTimeRef.current;
+        // 남은 길이보다 길면 끝으로
+        startOffsetRef.current = Math.min(
+          (startOffsetRef.current || 0) + elapsed,
+          audioBufferRef.current.duration
+        );
+      }
       sourceNodeRef.current.stop();
       sourceNodeRef.current.disconnect();
       sourceNodeRef.current = null;
@@ -62,18 +76,17 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
     setIsPlayingAudio(false);
   };
 
-  // 전체 읽기 핸들러 (AudioContext 기반)
-  const handleSpeakAll = async () => {
-    if (isPlayingAudio) {
-      stopAudio();
+  // 오디오 버퍼 미리 준비
+  // 오디오 버퍼 미리 준비 (외부에서 강제 호출도 가능)
+  const prepareAudio = async () => {
+    const text = getAllText();
+    if (!text) {
+      audioBufferRef.current = null;
+      onAudioPrepared?.();
       return;
     }
-    const text = getAllText();
-    if (!text) return;
     setIsAudioLoading(true);
     try {
-      const audioBase64 = await generateSpeech(text.replace(/•/g, ''));
-      // AudioContext 준비
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       }
@@ -81,12 +94,54 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
       if (ctx.state === 'suspended') {
         await ctx.resume();
       }
-      // 기존 재생 중지
-      stopAudio();
-      // PCM 디코드
+      // 이미 준비된 버퍼가 있고 텍스트가 동일하면 재사용
+      const prevBuffer = audioBufferRef.current;
+      const prevText = (audioBufferRef.current as any)?.__srcText;
+      if (prevBuffer && prevText === text) {
+        onAudioPrepared?.();
+        return;
+      }
+      const audioBase64 = await generateSpeech(text.replace(/•/g, ''));
       const audioBytes = base64ToUint8Array(audioBase64);
       const audioBuffer = pcmToAudioBuffer(audioBytes, ctx);
-      // Source 노드 생성
+      (audioBuffer as any).__srcText = text;
+      audioBufferRef.current = audioBuffer;
+      onAudioPrepared?.();
+    } catch (e) {
+      audioBufferRef.current = null;
+      onAudioPrepared?.();
+    } finally {
+      setIsAudioLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      await prepareAudio();
+    })();
+    return () => { ignore = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(blocks)]);
+
+  // 외부에서 강제 호출 가능하도록 ref 노출
+  useImperativeHandle(ref, () => ({ prepareAudio }));
+
+  // 전체 읽기 핸들러 (AudioContext 기반)
+  const handleSpeakAll = async () => {
+    if (isPlayingAudio) {
+      stopAudio();
+      return;
+    }
+    const ctx = audioContextRef.current;
+    const audioBuffer = audioBufferRef.current;
+    if (!ctx || !audioBuffer) return;
+    stopAudio();
+    startOffsetRef.current = 0;
+    try {
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
       const source = ctx.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(ctx.destination);
@@ -94,14 +149,13 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
         setIsPlayingAudio(false);
         sourceNodeRef.current = null;
       };
-      source.start(0);
+      startTimeRef.current = ctx.currentTime;
+      source.start(0, 0);
       sourceNodeRef.current = source;
       setIsPlayingAudio(true);
     } catch (error) {
       setIsPlayingAudio(false);
-      alert('Failed to generate or play speech. Please try again.');
-    } finally {
-      setIsAudioLoading(false);
+      alert('Failed to play speech. Please try again.');
     }
   };
 
@@ -118,23 +172,26 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
         audioContextRef.current.close();
         audioContextRef.current = null;
       }
+      audioBufferRef.current = null;
+      startOffsetRef.current = 0;
     };
   }, []);
-  // 1. Loading State (Initial Extraction)
-  // If there are no blocks yet but we are analyzing, show the loading spinner.
-  if (blocks.length === 0 && isAnalzying) {
+
+  // 1. Loading State (Initial Extraction or Audio 준비 중)
+  // 분석중이거나(isAnalzying) 오디오 준비중(isAudioLoading)일 때는 텍스트를 보여주지 않고 로딩 UI만 노출
+  if ((blocks.length === 0 && isAnalzying) || isAudioLoading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
-         <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="font-semibold text-slate-700 flex items-center gap-2">
-              <FileText size={18} className="text-indigo-500" />
-              Rhythm & Text Analysis
-            </h3>
+        <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="font-semibold text-slate-700 flex items-center gap-2">
+            <FileText size={18} className="text-indigo-500" />
+            Rhythm & Text Analysis
+          </h3>
         </div>
         <div className="h-full flex flex-col items-center justify-center text-indigo-600 p-8">
-            <Loader2 size={40} className="mb-4 animate-spin text-indigo-500" />
-            <p className="font-semibold text-lg animate-pulse">Extracting Text & Rhythm...</p>
-            <p className="text-sm text-indigo-400 mt-2">This uses AI and may take a moment.</p>
+          <Loader2 size={40} className="mb-4 animate-spin text-indigo-500" />
+          <p className="font-semibold text-lg animate-pulse">Extracting Text & Rhythm...</p>
+          <p className="text-sm text-indigo-400 mt-2">This uses AI and may take a moment.</p>
         </div>
       </div>
     );
@@ -165,10 +222,10 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
           if (!word) return null;
           // Check for ALL CAPS (Stress) - strict check to avoid 'I' or numbers triggering
           const isStress = word.length > 1 && word === word.toUpperCase() && /[A-Z]/.test(word);
-          
+
           return (
-            <span 
-              key={`${cIdx}-${wIdx}`} 
+            <span
+              key={`${cIdx}-${wIdx}`}
               className={`inline-block mx-[4px] ${isStress ? 'font-extrabold text-indigo-900 scale-105 origin-center' : 'text-slate-700'}`}
             >
               {word}
@@ -191,7 +248,25 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
           <span className="font-semibold text-slate-700">Rhythm & Text Analysis</span>
           <span className="text-xs text-slate-400 display-block">(Tap a sentence to analyze structure)</span>
         </div>
-        <div>
+        <div className="flex items-center gap-2">
+          {/* 처음부터 재생 버튼 */}
+          <button 
+            disabled={isPlayingAudio || isAudioLoading}
+            type="button"
+            className={`p-2 text-xs rounded border border-indigo-200 transition-colors min-w-[90px] 
+              ${isPlayingAudio || isAudioLoading
+                ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed opacity-60'
+                : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}
+            `}
+            onClick={async (e) => {
+              e.stopPropagation();
+              // 처음부터 재생: offset 0으로 초기화 후 handleSpeakAll
+              startOffsetRef.current = 0;
+              await handleSpeakAll();
+            }}
+          >
+            처음부터 재생
+          </button>
           {isPlayingAudio ? (
             <button
               type="button"
@@ -220,7 +295,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
           )}
         </div>
       </div>
-      
+
       <div className="overflow-y-auto p-6 space-y-8 flex-1">
         {blocks.map((block, bIdx) => (
           <div key={bIdx} className="space-y-4">
@@ -229,7 +304,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
                 {block.source || `Image ${bIdx + 1}`}
               </span>
             </div>
-            
+
             <div className="space-y-6">
               {/* Loop through visual paragraphs */}
               {block.paragraphs.map((paragraph, pIdx) => (
@@ -271,6 +346,6 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
       </div>
     </div>
   );
-};
+});
 
 export default TextDisplay;

@@ -121,6 +121,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
       <div className="flex gap-3">
         {/* Button 1: Gallery Upload */}
         <button
+          type="button"
           onClick={() => uploadInputRef.current?.click()}
           disabled={isProcessing}
           className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-indigo-100 hover:border-indigo-200 text-indigo-700 py-3 px-4 rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
@@ -146,7 +147,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
           onChange={(e) => processFiles(e.target.files)}
           className="hidden"
           multiple
-          accept="image/*"
+          accept="image/jpeg, image/png, image/webp, image/heic, image/heif"
         />
         {/* Fallback input for camera */}
         <input

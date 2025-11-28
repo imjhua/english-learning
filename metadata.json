@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Rhythm & Structure - English Learning",
+  "description": "An AI-powered English learning tool that analyzes text from images for rhythm, stress, and sentence structure.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

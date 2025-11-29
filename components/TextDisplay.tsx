@@ -114,7 +114,18 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
       setIsPlayingAudio(true);
     } catch (error) {
       setIsPlayingAudio(false);
-      alert('Failed to play speech. Please try again.');
+      let message = '음성 재생에 실패했습니다.';
+      if (typeof window.AudioContext === 'undefined') {
+        message += '\n- 이 브라우저는 오디오 재생을 지원하지 않습니다.';
+      } else if (!audioBuffer) {
+        message += '\n- 오디오 데이터가 준비되지 않았습니다.';
+      } else if (ctx && ctx.state === 'suspended') {
+        message += '\n- 시스템 또는 브라우저에서 오디오가 차단되었거나 음소거 상태일 수 있습니다.';
+      } else {
+        message += '\n- 알 수 없는 오류가 발생했습니다.';
+      }
+      message += '\n페이지를 새로고침하거나, 브라우저의 오디오 설정을 확인해 주세요.';
+      alert(message);
     }
   };
 
@@ -140,7 +151,18 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
       setIsPlayingAudio(true);
     } catch (error) {
       setIsPlayingAudio(false);
-      alert('Failed to play speech. Please try again.');
+      let message = '음성 재생에 실패했습니다.';
+      if (typeof window.AudioContext === 'undefined') {
+        message += '\n- 이 브라우저는 오디오 재생을 지원하지 않습니다.';
+      } else if (!audioBuffer) {
+        message += '\n- 오디오 데이터가 준비되지 않았습니다.';
+      } else if (ctx && ctx.state === 'suspended') {
+        message += '\n- 시스템 또는 브라우저에서 오디오가 차단되었거나 음소거 상태일 수 있습니다.';
+      } else {
+        message += '\n- 알 수 없는 오류가 발생했습니다.';
+      }
+      message += '\n페이지를 새로고침하거나, 브라우저의 오디오 설정을 확인해 주세요.';
+      alert(message);
     }
   };
 

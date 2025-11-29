@@ -40,7 +40,20 @@ const App: React.FC = () => {
     } catch (error) {
       console.error(error);
       setStatus(AppStatus.ERROR);
-      alert('Failed to process images. Please try again.');
+      let message = '이미지 분석에 실패했습니다.';
+      if (!navigator.onLine) {
+        message += '\n- 인터넷 연결이 불안정하거나 끊어졌습니다.';
+      } else if (images.length === 0) {
+        message += '\n- 업로드된 이미지가 없습니다.';
+      } else if (error instanceof SyntaxError) {
+        message += '\n- 서버에서 잘못된 데이터를 반환했습니다.';
+      } else if (error instanceof TypeError) {
+        message += '\n- 이미지 파일이 손상되었거나, 서버와의 통신에 문제가 있습니다.';
+      } else {
+        message += '\n- 알 수 없는 오류가 발생했습니다.';
+      }
+      message += '\n페이지를 새로고침하거나, 이미지를 다시 업로드해 주세요.';
+      alert(message);
     }
   };
 

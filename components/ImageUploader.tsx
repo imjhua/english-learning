@@ -6,9 +6,10 @@ interface ImageUploaderProps {
   images: UploadedImage[];
   onImagesChange: (images: UploadedImage[]) => void;
   isProcessing: boolean;
+  onImageClick?: (img: UploadedImage) => void;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, isProcessing }) => {
+const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, isProcessing, onImageClick }) => {
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   
@@ -164,10 +165,19 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
       {images.length > 0 && (
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {images.map((img, index) => (
-            <div key={img.id} className="relative flex-shrink-0 w-24 h-24 rounded-lg border border-slate-200 overflow-hidden bg-white shadow-sm group">
+            <div
+              key={img.id}
+              className="relative flex-shrink-0 w-24 h-24 rounded-lg border border-slate-200 overflow-hidden bg-white shadow-sm group cursor-pointer"
+              onClick={() => {
+                if (typeof onImageClick === 'function') onImageClick(img);
+              }}
+            >
               <img src={img.previewUrl} alt={`Uploaded ${index}`} className="w-full h-full object-cover" />
               <button
-                onClick={() => handleRemove(img.id)}
+                onClick={e => {
+                  e.stopPropagation();
+                  handleRemove(img.id);
+                }}
                 disabled={isProcessing}
                 className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition-colors"
               >

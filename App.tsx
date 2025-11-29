@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { UploadedImage, TextBlock, RhythmAnalysisResult, SentenceAnalysisResult, AppStatus } from './types';
 import { extractAndAnalyzeRhythm, analyzeSentenceStructure } from './services/geminiService';
 import ImageUploader from './components/ImageUploader';
+import ReactModal from 'react-modal';
 import TextDisplay from './components/TextDisplay';
 import AnalysisModal from './components/AnalysisModal';
 import { Sparkles, Play, RotateCcw } from 'lucide-react';
@@ -16,6 +17,9 @@ const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sentenceAnalysis, setSentenceAnalysis] = useState<SentenceAnalysisResult | null>(null);
   const [selectedSentence, setSelectedSentence] = useState<string | null>(null);
+  // 이미지 미리보기 모달 상태
+  const [previewImage, setPreviewImage] = useState<UploadedImage | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleStartProcessing = async () => {
     if (images.length === 0) return;
@@ -110,6 +114,10 @@ const App: React.FC = () => {
                 }
             }} 
             isProcessing={isProcessing} 
+            onImageClick={(img) => {
+              setPreviewImage(img);
+              setIsPreviewOpen(true);
+            }}
           />
           
           {/* Analysis Button - Visible whenever we have images and are not processing */}
@@ -152,6 +160,77 @@ const App: React.FC = () => {
             }
         }}
       />
+      {/* 이미지 미리보기 모달 */}
+      <ReactModal
+        isOpen={isPreviewOpen && !!previewImage}
+        onRequestClose={() => setIsPreviewOpen(false)}
+        contentLabel="이미지 미리보기"
+        style={{
+          overlay: { backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000 },
+          content: {
+            maxWidth: 600,
+            maxHeight: 800,
+            margin: 'auto',
+            borderRadius: 16,
+            padding: 0,
+            background: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }
+        }}
+        ariaHideApp={false}
+      >
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+          }}
+        >
+          <button
+            onClick={() => setIsPreviewOpen(false)}
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: 12,
+              background: 'rgba(0,0,0,0.5)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '50%',
+              width: 32,
+              height: 32,
+              fontSize: 20,
+              cursor: 'pointer',
+              zIndex: 10
+            }}
+            aria-label="닫기"
+          >
+            ×
+          </button>
+          {previewImage && (
+            <img
+              src={previewImage.previewUrl}
+              alt="미리보기"
+              style={{
+                maxWidth: '90%',
+                maxHeight: '75vh',
+                borderRadius: 12,
+                boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+                margin: 0,
+                display: 'block',
+                objectFit: 'contain',
+              }}
+            />
+          )}
+        </div>
+      </ReactModal>
     </div>
   );
 };

@@ -17,6 +17,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   const processFiles = async (files: FileList | File[] | null) => {
     if (!files || files.length === 0) return;
@@ -70,16 +71,20 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
         video: { facingMode: 'environment' } 
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
       setIsCameraOpen(true);
     } catch (err) {
       console.error("Camera access failed", err);
+      setIsCameraOpen(false);
       // Fallback to native input
-      cameraInputRef.current?.click();
+      setTimeout(() => cameraInputRef.current?.click(), 100);
     }
   };
+  // videoRef가 렌더링된 후에만 srcObject 할당
+  useEffect(() => {
+    if (isCameraOpen && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isCameraOpen]);
 
   const stopCamera = () => {
     if (streamRef.current) {
@@ -91,20 +96,22 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
 
   const capturePhoto = () => {
     if (!videoRef.current) return;
+    const video = videoRef.current;
+    // 비디오가 준비되지 않았거나 크기가 0이면 캡처하지 않음
+    if (video.videoWidth === 0 || video.videoHeight === 0) return;
 
     const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
-    
     if (ctx) {
-      ctx.drawImage(videoRef.current, 0, 0);
+      ctx.drawImage(video, 0, 0);
       canvas.toBlob((blob) => {
         if (blob) {
           const file = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
           processFiles([file]);
-          stopCamera();
         }
+        stopCamera(); // blob 처리 후 카메라 종료
       }, 'image/jpeg', 0.9);
     }
   };
@@ -115,6 +122,16 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
       stopCamera();
     };
   }, []);
+
+  // 비디오 메타데이터 로드 시점에 캡처 버튼 활성화
+  const handleVideoLoaded = () => {
+    setIsVideoReady(true);
+  };
+
+  // 카메라 모달이 닫힐 때 비디오 준비 상태 초기화
+  useEffect(() => {
+    if (!isCameraOpen) setIsVideoReady(false);
+  }, [isCameraOpen]);
 
   return (
     <div className="w-full space-y-4">
@@ -207,12 +224,17 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
 
             {/* Video Feed */}
             <div className="flex-1 bg-black flex items-center justify-center overflow-hidden">
-               <video 
-                 ref={videoRef} 
-                 autoPlay 
-                 playsInline 
-                 className="w-full h-full object-cover"
-               />
+               {streamRef.current ? (
+                 <video 
+                   ref={videoRef} 
+                   autoPlay 
+                   playsInline 
+                   onLoadedMetadata={handleVideoLoaded}
+                   className="w-full h-full object-cover"
+                 />
+               ) : (
+                 <div className="text-white text-center">카메라 스트림을 불러올 수 없습니다.<br/>권한을 허용했는지 확인하세요.</div>
+               )}
                {/* Viewfinder Guide */}
                <div className="absolute inset-0 border-2 border-white/30 m-8 rounded-lg pointer-events-none">
                   <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white"></div>
@@ -226,7 +248,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
             <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-center pb-12">
                <button 
                  onClick={capturePhoto}
-                 className="w-20 h-20 bg-white rounded-full border-4 border-indigo-500 shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+                 disabled={!isVideoReady}
+                 className="w-20 h-20 bg-white rounded-full border-4 border-indigo-500 shadow-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
                >
                   <div className="w-16 h-16 bg-white rounded-full border-2 border-black/10"></div>
                </button>

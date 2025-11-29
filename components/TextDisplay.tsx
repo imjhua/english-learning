@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { generateSpeech } from '../services/geminiService';
 import { TextBlock } from '../types';
-import { FileText, Loader2, Volume2, Square } from 'lucide-react';
+import { FileText, Loader2, Volume2, Square, Play } from 'lucide-react';
 
 interface TextDisplayProps {
   blocks: TextBlock[];
@@ -268,19 +268,19 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
         <div className="flex items-center gap-2">
           <FileText size={18} className="text-indigo-500" />
           <span className="font-semibold text-slate-700">Rhythm & Text Analysis</span>
-          <span className="text-xs text-slate-400 display-block">(Tap a sentence to analyze structure)</span>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-0.5 items-center">
           {/* 처음부터 재생 버튼 */}
           <button
             type="button"
             aria-label="처음부터 재생"
-            className={`p-2 text-xs rounded border min-w-[90px] font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
+            className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
               ${isAudioLoading || isPlayingAudio ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed opacity-60' : 'border-indigo-200 bg-white text-indigo-600 hover:bg-indigo-50'}`}
             onClick={handleSpeakAll}
             disabled={blocks.length === 0 || isAudioLoading || isPlayingAudio || !isAudioPrepared}
+            title="다시 재생"
           >
-            처음부터 재생
+            <Play size={20} />
           </button>
           {/* 이어듣기(스피커) 버튼 */}
           {isPlayingAudio ? (

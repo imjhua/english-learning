@@ -138,7 +138,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
           className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
         >
           <Camera size={20} />
-          <span>Scan Camera</span>
+          <span>Camera</span>
         </button>
 
         {/* Hidden Inputs */}
@@ -163,7 +163,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
 
       {/* Preview Area */}
       {images.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide">
           {images.map((img, index) => (
             <div
               key={img.id}

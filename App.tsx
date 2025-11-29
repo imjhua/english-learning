@@ -90,7 +90,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Navbar */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between lg:max-w-4xl lg:mx-auto">
           <div className="flex items-center gap-2">
             <div className="bg-indigo-600 p-1.5 rounded-lg">
                 <Sparkles size={20} className="text-white" />
@@ -111,10 +111,10 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 space-y-6 lg:max-w-4xl lg:mx-auto">
         
         {/* Section 1: Upload */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-slate-200 p-3 sm:p-5 space-y-4 w-full">
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Input Sources</h2>
           <ImageUploader 
             images={images} 
@@ -135,7 +135,7 @@ const App: React.FC = () => {
           
           {/* Analysis Button - Visible whenever we have images and are not processing */}
           {canStartAnalysis && (
-             <div className="pt-2">
+             <div>
                 <button
                     onClick={handleStartProcessing}
                     disabled={isProcessing}
@@ -151,7 +151,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Section 2: Text Display */}
-        <div className="h-[600px]">
+        <div className="h-[600px] w-full">
              <TextDisplay 
                 blocks={rhythmResult?.fullTextBlocks || []} 
                 onSentenceClick={handleSentenceClick}

@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { UploadedImage, TextBlock, RhythmAnalysisResult, SentenceAnalysisResult, AppStatus } from './types';
 import { extractAndAnalyzeRhythm, analyzeSentenceStructure } from './services/geminiService';
 import ImageUploader from './components/ImageUploader';
@@ -17,9 +17,9 @@ const App: React.FC = () => {
   const [sentenceAnalysis, setSentenceAnalysis] = useState<SentenceAnalysisResult | null>(null);
   const [selectedSentence, setSelectedSentence] = useState<string | null>(null);
 
-  const textDisplayRef = useRef<any>(null);
   const handleStartProcessing = async () => {
     if (images.length === 0) return;
+    
     setStatus(AppStatus.EXTRACTING);
     setRhythmResult(null);
 
@@ -32,18 +32,6 @@ const App: React.FC = () => {
 
       const result = await extractAndAnalyzeRhythm(imagePayload);
       setRhythmResult(result);
-
-      // 오디오 버퍼 준비가 끝날 때까지 기다림
-      await new Promise<void>((resolve) => {
-        // blocks prop이 갱신된 후 prepareAudio를 명시적으로 호출
-        setTimeout(async () => {
-          if (textDisplayRef.current && textDisplayRef.current.prepareAudio) {
-            await textDisplayRef.current.prepareAudio();
-          }
-          resolve();
-        }, 0);
-      });
-
       setStatus(AppStatus.READY);
     } catch (error) {
       console.error(error);
@@ -124,7 +112,7 @@ const App: React.FC = () => {
             isProcessing={isProcessing} 
           />
           
-          {/* Analysis Button - 오디오 준비가 끝난 뒤에만 노출 */}
+          {/* Analysis Button - Visible whenever we have images and are not processing */}
           {canStartAnalysis && (
              <div className="pt-2">
                 <button
@@ -134,7 +122,7 @@ const App: React.FC = () => {
                 >
                   <>
                       <Play size={20} fill="currentColor" />
-                      {(status === AppStatus.IDLE || status === AppStatus.READY) ? "Start Analysis" : "Restart Analysis"}
+                      {rhythmResult ? "Restart Analysis" : "Start Analysis"}
                   </>
                 </button>
              </div>
@@ -142,14 +130,13 @@ const App: React.FC = () => {
         </div>
 
         {/* Section 2: Text Display */}
-          <div className="h-[600px]">
+        <div className="h-[600px]">
              <TextDisplay 
-               ref={textDisplayRef}
-               blocks={rhythmResult?.fullTextBlocks || []} 
-               onSentenceClick={handleSentenceClick}
-               isAnalzying={isProcessing}
+                blocks={rhythmResult?.fullTextBlocks || []} 
+                onSentenceClick={handleSentenceClick}
+                isAnalzying={isProcessing}
              />
-          </div>
+        </div>
 
       </main>
 

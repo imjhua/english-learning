@@ -67,8 +67,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
 
   const startCamera = async () => {
     try {
+      // 최대 해상도(최대 4K)로 요청
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 3840 }, // 4K
+          height: { ideal: 2160 }
+        }
       });
       streamRef.current = stream;
       setIsCameraOpen(true);
@@ -105,14 +110,20 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.drawImage(video, 0, 0);
+      // drawImage 품질 향상 옵션 (브라우저 지원 시)
+      if ('imageSmoothingQuality' in ctx) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+      }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // JPEG 품질 0.98로 최대한 원본 보존
       canvas.toBlob((blob) => {
         if (blob) {
           const file = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
           processFiles([file]);
         }
         stopCamera(); // blob 처리 후 카메라 종료
-      }, 'image/jpeg', 0.9);
+      }, 'image/jpeg', 0.98);
     }
   };
 
@@ -166,6 +177,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
           className="hidden"
           multiple
           accept="image/jpeg, image/png, image/webp, image/heic, image/heif"
+          capture="environment"
         />
         {/* Fallback input for camera */}
         <input
@@ -174,7 +186,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
           onChange={(e) => processFiles(e.target.files)}
           className="hidden"
           accept="image/*"
-         
+          capture="environment"
         />
       </div>
 

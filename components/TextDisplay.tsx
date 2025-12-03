@@ -6,16 +6,20 @@ import { FileText, Loader2, Volume2, Square, Play } from 'lucide-react';
 
 interface TextDisplayProps {
   blocks: TextBlock[];
+  originalText: string;
   onSentenceClick: (sentence: string) => void;
   isAnalzying: boolean;
 }
 
-const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAnalzying }) => {
+const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSentenceClick, isAnalzying }) => {
   // 전체 텍스트 합치기 (리듬 마커 포함)
   const getAllText = () =>
     blocks.map(block =>
       block.paragraphs.map(paragraph => paragraph.join(' ')).join('\n')
     ).join('\n\n');
+
+  // 토글 상태: true면 분석 텍스트, false면 원본 텍스트
+  const [showAnalyzed, setShowAnalyzed] = useState(false);
 
   // 재생 상태 관리
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -269,7 +273,17 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
           <FileText size={18} className="text-indigo-500" />
           <span className="font-semibold text-slate-700">Rhythm & Text Analysis</span>
         </div>
-        <div className="flex gap-0.5 items-center">
+        <div className="flex gap-2 items-center">
+          {/* 텍스트 토글 버튼 */}
+          <button
+            type="button"
+            className={`px-3 py-1 rounded-lg font-medium text-sm border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
+              ${showAnalyzed ? 'bg-indigo-50 text-indigo-700 border-indigo-300' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
+            onClick={() => setShowAnalyzed(!showAnalyzed)}
+            title={showAnalyzed ? '원본 텍스트 보기' : '분석 텍스트 보기'}
+          >
+            {showAnalyzed ? '원본 텍스트' : '강세/리듬 분석'}
+          </button>
           {/* 처음부터 재생 버튼 */}
           <button
             type="button"
@@ -311,54 +325,63 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, onSentenceClick, isAn
           )}
         </div>
       </div>
-      
+
       <div className="overflow-y-auto p-6 space-y-8 flex-1">
-        {blocks.map((block, bIdx) => (
-          <div key={bIdx} className="space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="bg-slate-100 text-slate-500 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-bold">
-                {block.source || `Image ${bIdx + 1}`}
-              </span>
-            </div>
-            
-            <div className="space-y-6">
-              {/* Loop through visual paragraphs */}
-              {block.paragraphs.map((paragraph, pIdx) => (
-                <div key={pIdx} className="text-slate-700 leading-9 text-[17px]">
-                  {/* Loop through sentences in the paragraph */}
-                  {paragraph.map((sentence, sIdx) => (
-                    <span
-                      key={sIdx}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => !isAnalzying && onSentenceClick(cleanSentence(sentence))}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          !isAnalzying && onSentenceClick(cleanSentence(sentence));
-                        }
-                      }}
-                      className={`
-                        inline
-                        cursor-pointer 
-                        rounded-md
-                        px-1 -mx-0.5
-                        decoration-clone
-                        transition-colors
-                        duration-200
-                        ${isAnalzying ? 'cursor-wait opacity-70' : 'hover:bg-indigo-50 hover:shadow-sm'}
-                      `}
-                    >
-                      {renderRhythmText(sentence)}
-                      {/* Add a trailing space to separate sentences visually when they wrap */}
-                      {' '}
-                    </span>
+        {/* 토글 상태에 따라 텍스트 렌더링 */}
+        {!showAnalyzed ? (
+          <div className="whitespace-pre-line text-slate-700 leading-8 text-[17px]">
+            {/** 원본 텍스트 그대로 노출 */}
+            {typeof originalText === 'string' && originalText.trim().length > 0 ? originalText : '원본 텍스트가 없습니다.'}
+          </div>
+        ) : (
+          <>
+            {blocks.map((block, bIdx) => (
+              <div key={bIdx} className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="bg-slate-100 text-slate-500 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-bold">
+                    {block.source || `Image ${bIdx + 1}`}
+                  </span>
+                </div>
+                <div className="space-y-6">
+                  {/* Loop through visual paragraphs */}
+                  {block.paragraphs.map((paragraph, pIdx) => (
+                    <div key={pIdx} className="text-slate-700 leading-9 text-[17px]">
+                      {/* Loop through sentences in the paragraph */}
+                      {paragraph.map((sentence, sIdx) => (
+                        <span
+                          key={sIdx}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => !isAnalzying && onSentenceClick(cleanSentence(sentence))}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              !isAnalzying && onSentenceClick(cleanSentence(sentence));
+                            }
+                          }}
+                          className={`
+                            inline
+                            cursor-pointer 
+                            rounded-md
+                            px-1 -mx-0.5
+                            decoration-clone
+                            transition-colors
+                            duration-200
+                            ${isAnalzying ? 'cursor-wait opacity-70' : 'hover:bg-indigo-50 hover:shadow-sm'}
+                          `}
+                        >
+                          {renderRhythmText(sentence)}
+                          {/* Add a trailing space to separate sentences visually when they wrap */}
+                          {' '}
+                        </span>
+                      ))}
+                    </div>
                   ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        ))}
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );

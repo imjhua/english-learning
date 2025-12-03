@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { UploadedImage, TextBlock, RhythmAnalysisResult, SentenceAnalysisResult, AppStatus } from './types';
 import { extractAndAnalyzeRhythm, analyzeSentenceStructure } from './services/geminiService';
 import ImageUploader from './components/ImageUploader';
@@ -86,6 +86,19 @@ const App: React.FC = () => {
 
   const canStartAnalysis = images.length > 0
 
+  // 원본 텍스트 추출 (이미지에서 추출된 텍스트)
+  const originalText = rhythmResult?.originalText || '';
+
+  // 분석 영역 ref
+  const analysisRef = useRef<HTMLDivElement>(null);
+
+  // 분석 완료 시 분석 영역으로 스크롤
+  useEffect(() => {
+    if (status === AppStatus.READY && analysisRef.current) {
+      analysisRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [status]);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Navbar */}
@@ -151,9 +164,10 @@ const App: React.FC = () => {
         </div>
 
         {/* Section 2: Text Display */}
-        <div className="h-[600px] w-full">
+        <div className="h-[600px] w-full" ref={analysisRef}>
           <TextDisplay
             blocks={rhythmResult?.fullTextBlocks || []}
+            originalText={originalText}
             onSentenceClick={handleSentenceClick}
             isAnalzying={isProcessing}
           />

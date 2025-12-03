@@ -28,25 +28,27 @@ export const extractAndAnalyzeRhythm = async (
   
   const model = "gemini-2.5-flash"; // Fast and capable for text extraction
   
-  const promptText = `
-    You are an expert English teacher. 
-    1. Look at the provided images in order. Extract all English text.
-    2. EXCLUDE the following headers or labels if they appear at the very top of the image (do NOT analyze or include them in any output):
+    const promptText = `
+     You are an expert English teacher. 
+     1. Look at the provided images in order. Extract all English text.
+     2. EXCLUDE the following headers or labels if they appear at the very top of the image (do NOT analyze or include them in any output):
        - "upgrade your speaking skills"
        - "NEWS"
        - "LISTENING PRACTICE"
-    3. Group the text by their image source (e.g., Image 1, Image 2).
-    4. Crucially, preserve the paragraph structure (visual blocks of text).
+     3. Group the text by their image source (e.g., Image 1, Image 2).
+     4. Crucially, preserve the paragraph structure (visual blocks of text).
        - Return a list of paragraphs.
        - Each paragraph is a list of sentences.
-    5. For EVERY sentence, apply Rhythm Analysis directly to the text:
+     5. For EVERY sentence, apply Rhythm Analysis directly to the text:
        - Use '•' to indicate natural pauses/breaks/chunks (e.g., between subject and verb phrases, or before prepositions).
+       - Do NOT insert • at every space/word break. Only insert • at natural phrase or clause boundaries, or where a native speaker would naturally pause or chunk the sentence for meaning or rhythm.
        - CAPITALIZE words or syllables that should be STRESSED based on natural English speech rhythm (focus on content words).
        - Keep function words in lowercase unless emphasized.
        - IMPORTANT: Add spaces around the dot. Example output: "THIS year • is my FIFTH year • of STUDYING English."
+     6. Also, return the full original extracted text (before rhythm analysis or any modification) as a single string, preserving all line breaks and paragraph structure. This should be the exact text as it appears in the images, grouped in order.
     
-    Return the result in strict JSON format.
-  `;
+     Return the result in strict JSON format, with keys: fullTextBlocks, originalText.
+    `;
 
   // Construct parts: Prompt + Images
   const parts: any[] = [{ text: promptText }];
@@ -81,8 +83,12 @@ export const extractAndAnalyzeRhythm = async (
           required: ["source", "paragraphs"],
         },
       },
+      originalText: {
+        type: Type.STRING,
+        description: "The full original extracted text from all images, before rhythm analysis, preserving all line breaks and paragraph structure."
+      },
     },
-    required: ["fullTextBlocks"],
+    required: ["fullTextBlocks", "originalText"],
   };
 
   try {

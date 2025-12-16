@@ -35,17 +35,18 @@ export const extractAndAnalyzeRhythm = async (
        - "upgrade your speaking skills"
        - "NEWS"
        - "LISTENING PRACTICE"
-     3. Group the text by their image source (e.g., Image 1, Image 2).
-     4. Crucially, preserve the paragraph structure (visual blocks of text).
+     3. EXCLUDE any footnote numbers or marks (e.g., ¹, ², ³, etc.) from the original extracted text. Do not include these in any output.
+     4. Group the text by their image source (e.g., Image 1, Image 2).
+     5. Crucially, preserve the paragraph structure (visual blocks of text).
        - Return a list of paragraphs.
        - Each paragraph is a list of sentences.
-     5. For EVERY sentence, apply Rhythm Analysis directly to the text:
+     6. For EVERY sentence, apply Rhythm Analysis directly to the text:
        - Use '•' to indicate natural pauses/breaks/chunks (e.g., between subject and verb phrases, or before prepositions).
        - Do NOT insert • at every space/word break. Only insert • at natural phrase or clause boundaries, or where a native speaker would naturally pause or chunk the sentence for meaning or rhythm.
        - CAPITALIZE words or syllables that should be STRESSED based on natural English speech rhythm (focus on content words).
        - Keep function words in lowercase unless emphasized.
        - IMPORTANT: Add spaces around the dot. Example output: "THIS year • is my FIFTH year • of STUDYING English."
-     6. Also, return the full original extracted text (before rhythm analysis or any modification) as a single string, preserving all line breaks and paragraph structure. This should be the exact text as it appears in the images, grouped in order.
+     7. Also, return the full original extracted text (before rhythm analysis or any modification) as a single string, preserving all line breaks and paragraph structure. This should be the exact text as it appears in the images, grouped in order, but footnote numbers must be excluded.
     
      Return the result in strict JSON format, with keys: fullTextBlocks, originalText.
     `;
@@ -133,11 +134,11 @@ export const analyzeSentenceStructure = async (
     1. 'mainVerb': The exact string of the main predicate verb of the sentence (e.g., "started").
     2. 'otherVerbs': A list of other verb forms present (e.g., ["studying", "forgetting"]).
     3. 'form': The sentence pattern (e.g., 1형식, 3형식). ONLY the label for the main clause.
-    4. 'diagram': Draw a clear, visually structured tree diagram of the sentence using indentation and unicode characters (└──, ├──, │). 
+    4. 'diagram': Only create a visually structured tree diagram (using indentation and unicode characters └──, ├──, │) for sentences with complex structure (such as multiple clauses, embedded phrases, or long sentences). For simple words or very short/simple sentences, do NOT generate a diagram—just return an empty string or a brief note (e.g., "Not applicable for simple sentence").
        - Each node should show the English phrase (with its original capitalization), its grammatical role (e.g., S, V, O, C, Mod), and a short Korean explanation in parentheses.
        - For phrases from uploaded images, preserve the original phrase and its capitalization as much as possible.
        - Show the hierarchy and relationships between sentence parts so that a visual learner can easily grasp the structure at a glance.
-       Example:
+       Example (complex):
         This year (S)
         └─ is (V)
           └─ my fifth year of studying english every day with "입트영" (C)
@@ -148,20 +149,27 @@ export const analyzeSentenceStructure = async (
                 ├─ english (O)
                 ├─ every day (수식어)
                 └─ with "입트영" (수식어)
+       Example (simple):
+        "I agree." → Not applicable for simple sentence
     5. 'structure': Provide a detailed, step-by-step breakdown of the sentence structure, focusing on how each part connects visually and logically (as if explaining a diagram from an image).
        - Use numbered lists (1., 2.) for main components.
        - Use bullet points (*) for sub-components, and further indent for deeper levels.
-       - For each phrase or word, include the English (with its original capitalization), its grammatical role, and a short Korean explanation.
+       - For each phrase or word, include:
+         - the English (with its original capitalization)
+         - its grammatical role
+         - a short Korean explanation
+         - and the direct Korean meaning/translation of the word or phrase (in quotes, e.g., '그러나').
+       - If the word is used for emphasis (예: But), make sure to note the emphasis and show the Korean meaning clearly.
        - At the end, summarize the overall structure formula as "전체 구조: S + V + O + ...".
        - Use standard markdown (no bold) for the English words being explained.
        - Example (Korean):
-         1. But: 접속사, 문맥 연결
+         1. But: 접속사, 문맥 연결. '그러나' (강조)
          2. as I kept going: 시간 부사절, (~하면서, 계속 진행함에 따라)
-            * as: 접속사 (~하면서)
-            * I: 주어
-            * kept going: 동사구
+            * as: 접속사 (~하면서), '~하면서'
+            * I: 주어, '나'
+            * kept going: 동사구, '계속했다'
               * kept: 동사, '계속 ~하다'
-              * going: 동명사, 'kept'의 목적어
+              * going: 동명사, 'kept'의 목적어, '진행'
          전체 구조: S + V + ...
     6. 'translation': A natural Korean translation.
   `;

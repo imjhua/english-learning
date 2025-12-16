@@ -294,7 +294,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSente
             disabled={blocks.length === 0 || isAudioLoading || isPlayingAudio || !isAudioPrepared}
             title="다시 재생"
           >
-            <Play size={20} />
+            <Volume2 size={20} />
           </button>
           {/* 이어듣기(스피커) 버튼 */}
           {isPlayingAudio ? (
@@ -319,7 +319,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSente
               {isAudioLoading ? (
                 <Loader2 size={20} className="animate-spin" />
               ) : (
-                <Volume2 size={20} />
+                <Play size={20} />
               )}
             </button>
           )}

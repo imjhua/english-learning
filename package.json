@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "webDomain": "https://english-learning-ebon-psi.vercel.app/",
   "dependencies": {
     "@google/genai": "^1.30.0",
     "lucide-react": "^0.555.0",

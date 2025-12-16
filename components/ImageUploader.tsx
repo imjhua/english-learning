@@ -177,7 +177,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesChange, i
           className="hidden"
           multiple
           accept="image/jpeg, image/png, image/webp, image/heic, image/heif"
-          capture="environment"
         />
         {/* Fallback input for camera */}
         <input

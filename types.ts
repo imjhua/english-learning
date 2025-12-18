@@ -6,6 +6,7 @@ export interface TextBlock {
 
 export interface RhythmAnalysisResult {
   fullTextBlocks: TextBlock[];
+  originalText: TextBlock[];
 }
 
 export interface SentenceAnalysisResult {

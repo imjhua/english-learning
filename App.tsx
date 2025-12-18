@@ -87,7 +87,7 @@ const App: React.FC = () => {
   const canStartAnalysis = images.length > 0
 
   // 원본 텍스트 추출 (이미지에서 추출된 텍스트)
-  const originalText = rhythmResult?.originalText || '';
+  const originalText = rhythmResult?.originalText || [];
 
   // 분석 영역 ref
   const analysisRef = useRef<HTMLDivElement>(null);

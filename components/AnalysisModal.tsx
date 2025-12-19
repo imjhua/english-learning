@@ -67,23 +67,27 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
   // Helper to parse and render the structure text as a list
   const renderOverallStructure = (text: string) => {
     const lines = text.split('\n').filter(line => line.trim().length > 0);
-    const overallStructureLine = lines.find(line => line.includes('전체 구조') || line.includes('Structure:'));
+    const overallStructureLine = lines.find(line => line.includes('[전체구조]'));
 
-    return (<div className="mb-5 pb-5 border-b border-dashed border-slate-200">
-      <div className="bg-indigo-50/60 rounded-lg p-2 border border-indigo-100/50">
-        <span className="text-xs font-bold text-indigo-500 uppercase tracking-wider w-fit bg-white p-1 rounded border border-indigo-100 mr-2">
-          전체 구조
-        </span>
-        <span className="font-bold text-indigo-900 text-base leading-snug break-words">
-          {overallStructureLine.replace(/전체 구조\s*[:]\s*/, '').replace(/Structure\s*[:]\s*/, '').replace(/<전체 구조>/, '')}
-        </span>
+    if (!overallStructureLine) return null;
+
+    return (
+      <div className="mb-5 pb-5 border-b border-dashed border-slate-200">
+        <div className="bg-indigo-50/60 rounded-lg p-3 border border-indigo-100/50">
+          <span className="text-xs font-bold text-indigo-500 uppercase tracking-wider w-fit bg-white px-2 py-1 rounded border border-indigo-100 mr-2">
+            전체 구조
+          </span>
+          <span className="font-bold text-indigo-900 text-base leading-snug break-words">
+            {overallStructureLine.replace(/\[전체구조\]\s*[:]\s*/, '')}
+          </span>
+        </div>
       </div>
-    </div>)
-  }
+    );
+  };
 
   const renderStructureList = (text: string) => {
     const lines = text.split('\n').filter(line => line.trim().length > 0);
-    const normalLines = lines.filter(line => !line.includes('전체 구조') && !line.includes('Structure:'));
+    const normalLines = lines.filter(line => !line.includes('[전체구조]'));
 
     return (
       <div className="space-y-4">
@@ -91,15 +95,15 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
         <ul className="space-y-3 text-[15px] text-slate-700">
           {normalLines.map((line, i) => {
             const trimmed = line.trim();
+            if (!trimmed) return null;
 
-            // Simple indent detection for sub-items
-            const isSubItem = trimmed.startsWith('*') || trimmed.startsWith('-');
-
-            // Try to split by common separators if present (colon or dash)
-            // But primarily rely on simple rendering with markdown parsing
+            // Count leading spaces/indentation to determine nesting level
+            const leadingSpaces = line.match(/^(\s*)/)?.[1].length || 0;
+            const indentLevel = Math.floor(leadingSpaces / 2); // Assuming 2 spaces per level
+            const isSubItem = indentLevel > 0;
 
             return (
-              <li key={i} className={`flex items-start gap-2 ${isSubItem ? 'ml-4 sm:ml-6 text-sm' : ''}`}>
+              <li key={i} className={`flex items-start gap-2 ${isSubItem ? `text-sm` : ''}`} style={{ marginLeft: `${indentLevel * 1.5}rem` }}>
                 {!isSubItem && (
                   <span className="text-slate-400 shrink-0 select-none font-normal mt-0.5">•</span>
                 )}
@@ -196,6 +200,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
 
                   {/* Overall Structure - Separated visual block */}
                   {renderOverallStructure(data.structure)}
+                  
                   {/* Tree Diagram */}
                   {data.diagram && (
                     <div className="">

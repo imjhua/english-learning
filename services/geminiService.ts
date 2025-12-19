@@ -242,41 +242,37 @@ export const analyzeSentenceStructure = async (
     2. 'otherVerbs': 문장 내 등장하는 다른 동사 형태(예: ["studying", "forgetting"])를 리스트로 반환하세요.
     3. 'form': 문장의 형식(예: 1형식, 3형식). 반드시 주절 기준으로만 라벨을 반환하세요.
     4. 'diagram': 문장이 복잡한 구조(복수 절, 삽입구, 긴 문장 등)일 때만, 시각적으로 구조를 보여주는 트리 다이어그램을 만들어주세요. (들여쓰기, 유니코드 └──, ├──, │ 사용) 아주 짧거나 단순한 문장은 다이어그램을 생성하지 말고 빈 문자열 또는 "간단한 문장에는 해당 없음" 등으로 반환하세요.
-       - 각 노드에는 영어 구(원본 대소문자), 문법적 역할(예: S, V, O, C, Mod), 짧은 한글 설명을 괄호로 표기하세요.
-       - 업로드된 이미지에서 추출된 구는 원본 구와 대소문자를 최대한 보존하세요.
+       - 마크다운 bold(**) 표시를 사용하지 마세요. 순수 텍스트만 사용하세요.
        - 구조의 계층과 관계를 명확히 보여주어 시각적 학습자가 한눈에 이해할 수 있게 하세요.
-       예시(복잡):
-        This year (S)
-        └─ is (V)
-          └─ my fifth year of studying english every day with "입트영" (C)
-            ├─ my fifth year (핵심 명사)
-            └─ of (전치사)
-              └─ studying english every day with "입트영" (동명사구, 전치사의 목적어)
-                ├─ studying (동명사)
-                ├─ english (O)
-                ├─ every day (수식어)
-                └─ with "입트영" (수식어)
-       예시(간단):
-        "I agree." → 간단한 문장에는 해당 없음
-    5. 'structure': 문장 구조를 단계별로 자세히 설명하세요. 각 부분이 어떻게 연결되는지 시각적/논리적으로 설명(이미지의 다이어그램을 설명하듯)하세요.
-       - 주요 구성요소는 번호(1., 2.)로, 하위 구성요소는 *로, 더 깊은 단계는 들여쓰기로 구분하세요.
-       - 각 구/단어마다:
-         - 영어(원본 대소문자)
-         - 문법적 역할
-         - 짧은 한글 설명
-         - 해당 단어나 구의 직접적인 한글 의미/번역(따옴표로, 예: '그러나')
-       - 강조된 단어(예: But)는 강조임을 명확히 표기하고, 한글 의미도 분명히 보여주세요.
-       - 마지막에 전체 구조 공식(예: "전체 구조: S + V + O + ...")을 요약하세요.
-       - 영어 설명에는 마크다운(볼드 없이)만 사용하세요.
-       - 예시(한글):
-         1. But: 접속사, 문맥 연결. '그러나' (강조)
-         2. as I kept going: 시간 부사절, (~하면서, 계속 진행함에 따라)
-            * as: 접속사 (~하면서), '~하면서'
-            * I: 주어, '나'
-            * kept going: 동사구, '계속했다'
-              * kept: 동사, '계속 ~하다'
-              * going: 동명사, 'kept'의 목적어, '진행'
-         전체 구조: S + V + ...
+       예시:
+        [Sentence]
+        ├─ recent results showed rising revenue in premium cabins even as coach ticket sales dipped compared to the previous year.
+        ├─ S: recent results
+        ├─ V: showed
+        └─ O: rising revenue in premium cabins
+            ├─ 핵심 목적어: rising revenue
+            └─ 수식어: in premium cabins
+            + 부가 상황 (양보 / 대조)
+              └─ even as coach ticket sales dipped
+                    ├─ S: coach ticket sales
+                    ├─ V: dipped
+                    └─ 비교: compared to the previous year
+
+    5. 'structure': 문장 구문을 분석하세요. 뜻도 같이 알려주세요.
+       중요:
+       - 반드시 첫 줄에만 "[전체구조]: S + V + O" 형태로 전체 문장의 기본 구조를 명시하세요.
+       - "[전체구조]: " 다음에 구조를 작성하고 반드시 개행(\n)으로 구분하세요.
+       - 그 다음 줄부터 상세 분석을 제공하세요. (각 분석 항목은 "-"로 시작)
+       
+       포맷 예시:
+       [전체구조]: S + V + O
+       - recent results: 명사구 (주어) 
+         → 최근 실적은
+       - showed: 동사 (3형식) → 보여주었다
+       - rising revenue in premium cabins: 목적어 
+         → 프리미엄 좌석에서의 매출 증가를
+         - rising: 현재분사 (증가하는)
+         - revenue: 명사
     6. 'translation': 자연스러운 한글 번역.
   `;
 

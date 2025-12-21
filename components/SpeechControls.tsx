@@ -31,7 +31,7 @@ const SpeechControls: React.FC<SpeechControlsProps> = ({
   onRepeatChange,
 }) => {
   return (
-    <div className="flex gap-4 items-center">
+    <div className="flex gap-4 items-center justify-between w-full sm:w-auto">
       {/* 스피커 제어 영역 */}
       <div className="flex gap-2 items-center">
         {/* 처음부터 재생 버튼 */}

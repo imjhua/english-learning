@@ -80,14 +80,16 @@ const TextDisplay = forwardRef<TextDisplayHandle, TextDisplayProps>(({ blocks, o
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
-      <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-        <div className="flex items-center gap-2">
-          <FileText size={18} className="text-indigo-500" />
-          <span className="font-semibold text-slate-700">Text Analysis</span>
+      <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center justify-between w-full sm:w-auto">
+          <div className="flex items-center gap-2">
+            <FileText size={18} className="text-indigo-500" />
+            <span className="font-semibold text-slate-700">Text Analysis</span>
+          </div>
            {/* 텍스트 토글 버튼 */}
           <button
             type="button"
-            className={`px-3 py-1 rounded-lg font-medium text-sm border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
+            className={`ml-2 sm:ml-3 px-3 py-1 rounded-lg font-medium text-sm border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
               ${showAnalyzed ? 'bg-indigo-50 text-indigo-700 border-indigo-300' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
             onClick={() => setShowAnalyzed(!showAnalyzed)}
             title={showAnalyzed ? '원본 텍스트 보기' : '분석 텍스트 보기'}
@@ -95,24 +97,22 @@ const TextDisplay = forwardRef<TextDisplayHandle, TextDisplayProps>(({ blocks, o
             {showAnalyzed ? '원본보기' : '분석보기'}
           </button>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center w-full sm:w-auto">
+        <div className="w-full sm:w-auto">
           {/* 음성 재생 컨트롤 */}
-          <div className="w-full sm:w-auto">
-            <SpeechControls
-              isPlayingAudio={speechPlayer.isPlayingAudio}
-              isAudioLoading={speechPlayer.isAudioLoading}
-              isAudioPrepared={speechPlayer.isAudioPrepared}
-              isDisabled={blocks.length === 0}
-              isAudioError={speechPlayer.isAudioError}
-              playbackRate={speechPlayer.playbackRate}
-              isRepeat={speechPlayer.isRepeat}
-              onPlay={speechPlayer.playFromStart}
-              onResume={speechPlayer.resumeAudio}
-              onStop={speechPlayer.stopAudio}
-              onSpeedChange={speechPlayer.setSpeed}
-              onRepeatChange={speechPlayer.setRepeat}
-            />
-          </div>
+          <SpeechControls
+            isPlayingAudio={speechPlayer.isPlayingAudio}
+            isAudioLoading={speechPlayer.isAudioLoading}
+            isAudioPrepared={speechPlayer.isAudioPrepared}
+            isDisabled={blocks.length === 0}
+            isAudioError={speechPlayer.isAudioError}
+            playbackRate={speechPlayer.playbackRate}
+            isRepeat={speechPlayer.isRepeat}
+            onPlay={speechPlayer.playFromStart}
+            onResume={speechPlayer.resumeAudio}
+            onStop={speechPlayer.stopAudio}
+            onSpeedChange={speechPlayer.setSpeed}
+            onRepeatChange={speechPlayer.setRepeat}
+          />
         </div>
       </div>
 

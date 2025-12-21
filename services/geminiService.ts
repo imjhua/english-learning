@@ -251,10 +251,16 @@ export const analyzeSentenceStructure = async (
     3. 'form': 문장의 형식(예: 1형식, 3형식). 반드시 주절 기준으로만 라벨을 반환하세요.
     4. 'diagram': 문장이 복잡한 구조(복수 절, 삽입구, 긴 문장 등)일 때만, 시각적으로 구조를 보여주는 트리 다이어그램을 만들어주세요. (들여쓰기, 유니코드 └──, ├──, │ 사용) 아주 짧거나 단순한 문장은 다이어그램을 생성하지 말고 빈 문자열 또는 "간단한 문장에는 해당 없음" 등으로 반환하세요.
        - 마크다운 bold(**) 표시를 사용하지 마세요. 순수 텍스트만 사용하세요.
-       - 구조의 계층과 관계를 명확히 보여주어 시각적 학습자가 한눈에 이해할 수 있게 하세요.
+       - 다이어그램은 다음 순서로 구성하세요:
+         1. [Sentence] 헤더만 표시 (전체 문장은 표시하지 않음)
+         2. 주절의 S, V, O를 순서대로 표시
+         3. O가 복잡한 구조일 경우, 들여쓰기로 세부 요소(핵심 명사, 수식어 등) 표시
+         4. 추가 구조나 종속절이 있으면 "+ 부가 상황 (양보 / 대조)" 또는 "+ 추가 정보"로 표시하고 그 아래에 들여쓰기
+         5. 종속절의 S, V 등을 명확히 표시
+       - 복잡하지 않으면 생략하되, 꼭 필요한 계층 구조만 포함하세요.
+       
        예시:
         [Sentence]
-        ├─ recent results showed rising revenue in premium cabins even as coach ticket sales dipped compared to the previous year.
         ├─ S: recent results
         ├─ V: showed
         └─ O: rising revenue in premium cabins
@@ -271,16 +277,18 @@ export const analyzeSentenceStructure = async (
        - 반드시 첫 줄에만 "[전체구조]: S + V + O" 형태로 전체 문장의 기본 구조를 명시하세요.
        - "[전체구조]: " 다음에 구조를 작성하고 반드시 개행(\n)으로 구분하세요.
        - 그 다음 줄부터 상세 분석을 제공하세요. (각 분석 항목은 "-"로 시작)
+       - 각 항목의 뜻 설명(→ 기호)은 반드시 다음 줄에 들여쓰기로 표시하세요. 같은 줄에 표시하면 안 됩니다.
        
        포맷 예시:
        [전체구조]: S + V + O
-       - recent results: 명사구 (주어) 
+       - **recent results**: 명사구 (주어)
          → 최근 실적은
-       - showed: 동사 (3형식) → 보여주었다
-       - rising revenue in premium cabins: 목적어 
+       - **showed**: 동사 (3형식)
+         → 보여주었다
+       - **rising revenue in premium cabins**: 목적어
          → 프리미엄 좌석에서의 매출 증가를
-         - rising: 현재분사 (증가하는)
-         - revenue: 명사
+         - **rising**: 현재분사 (증가하는)
+         - **revenue**: 명사
     6. 'translation': 자연스러운 한글 번역.
   `;
 

@@ -21,7 +21,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSente
     ).join('\n\n');
 
   // 토글 상태: true면 분석 텍스트, false면 원본 텍스트
-  const [showAnalyzed, setShowAnalyzed] = useState(false);
+  const [showAnalyzed, setShowAnalyzed] = useState(true);
 
   // 재생 상태 관리
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -243,7 +243,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSente
       <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FileText size={18} className="text-indigo-500" />
-          <span className="font-semibold text-slate-700">Rhythm & Text Analysis</span>
+          <span className="font-semibold text-slate-700">Text Analysis</span>
         </div>
         <div className="flex gap-2 items-center">
           {/* 텍스트 토글 버튼 */}
@@ -254,7 +254,7 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSente
             onClick={() => setShowAnalyzed(!showAnalyzed)}
             title={showAnalyzed ? '원본 텍스트 보기' : '분석 텍스트 보기'}
           >
-            {showAnalyzed ? '원본 텍스트' : '강세/리듬 분석'}
+            {showAnalyzed ? '원본보기' : '분석보기'}
           </button>
           {/* 처음부터 재생 버튼 */}
           <button

@@ -100,7 +100,14 @@ const promptText = `
      - "title": 메인 제목 또는 헤드라인 텍스트 (없을 경우 빈 문자열)
      - "paragraphs": 리듬 마커(•)가 포함된 문장 리스트로 이루어진 문단들의 리스트
    - 각 문장에 대해 리듬 분석을 적용하세요.
-   - 원어민 화자의 강세(강조)와 리듬 마커(•)를 포함하세요.
+   - 원어민 화자의 강세(강조)를 대문자로 표시하세요.
+   - 하이픈(-)은 절대 사용하지 마세요. 단어를 음절 단위로 나누지 마세요.
+   - 리듬 마커(•)는 **최소한으로, 꼭 끊어서 읽어야 하는 부분**에만 넣으세요.
+   - 즉, 강한 강세 단어가 끝나고 다음 단어와 자연스럽게 연음되지 않으며 명확히 띄어져야 하는 부분에만 • 를 넣으세요.
+   - 약한 단어들 사이나, 단어들이 자연스럽게 연결되는 부분에는 절대 넣지 마세요.
+   - 예: "TRUMP" (강세) + "has" (약한) → "TRUMP •" (끊어짐)
+   - 예: "has" + "been" → • 를 넣지 않음 (자연스럽게 연결)
+   - 예: "approved a" → • 를 넣지 않음 (약한 단어들)
 
 8. [originalText] 필드:
    - 반드시 fullTextBlocks와 동일한 JSON 배열 구조로 반환하세요.
@@ -111,16 +118,16 @@ const promptText = `
 
 9. 예시:
    - 원본 이미지:
-     Title: "Granddaughter's Ukulele Lessons"
-     Paragraph: "my daughter has been learning the ukulele in an after-school program for six years now."
+     Title: "TikTok Deal"
+     Paragraph: "President Donald Trump has approved a deal allowing TikTok to continue operating in the United States under a new joint-venture structure."
    - [originalText]:
      [
        {
          "source": "Image 1",
-         "title": "Granddaughter's Ukulele Lessons",
+         "title": "TikTok Deal",
          "paragraphs": [
            [
-             "my daughter has been learning the ukulele in an after-school program for six years now."
+             "President Donald Trump has approved a deal allowing TikTok to continue operating in the United States under a new joint-venture structure."
            ]
          ]
        }
@@ -129,10 +136,10 @@ const promptText = `
      [
        {
          "source": "Image 1",
-         "title": "Granddaughter's Ukulele Lessons",
+         "title": "TikTok Deal",
          "paragraphs": [
            [
-             "my DAUGHter • has been LEARNing • the UKEleLE • in an AFter-school program • for SIX years NOW."
+             "PREsident DONald TRUMP • has apPROVED a DEAL alLOWing TikTok • to conTINue OPerating in the uNIted STATES • under a NEW joint VENture STRUCture."
            ]
          ]
        }

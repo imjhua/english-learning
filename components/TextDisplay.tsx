@@ -1,5 +1,5 @@
 
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { TextBlock } from '../types';
 import { FileText, Loader2 } from 'lucide-react';
 import OriginalTextBlockDisplay from './OriginalTextBlockDisplay';
@@ -30,6 +30,13 @@ const TextDisplay = forwardRef<TextDisplayHandle, TextDisplayProps>(({ blocks, o
 
   // 음성 재생 hook
   const speechPlayer = useSpeechPlayer(blocks.length > 0 ? getAllText() : '');
+
+  // 분석 중일 때 음성 재생 중지
+  useEffect(() => {
+    if (isAnalzying) {
+      speechPlayer.stopAudio();
+    }
+  }, [isAnalzying, speechPlayer]);
 
   // forwardRef로 부모에서 stopAudio 호출 가능하게 노출
   useImperativeHandle(ref, () => ({

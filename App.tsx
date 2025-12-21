@@ -6,7 +6,7 @@ import ImageUploader from './components/ImageUploader';
 import ReactModal from 'react-modal';
 import TextDisplay from './components/TextDisplay';
 import AnalysisModal from './components/AnalysisModal';
-import { Sparkles, Play, RotateCcw } from 'lucide-react';
+import { Sparkles, Play, RotateCcw, X, RotateCw } from 'lucide-react';
 
 const App: React.FC = () => {
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -20,6 +20,7 @@ const App: React.FC = () => {
   // 이미지 미리보기 모달 상태
   const [previewImage, setPreviewImage] = useState<UploadedImage | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [imageRotation, setImageRotation] = useState(0);
 
   const handleStartProcessing = async () => {
     if (images.length === 0) return;
@@ -190,33 +191,69 @@ const App: React.FC = () => {
       {/* 이미지 미리보기 모달 */}
       <ReactModal
         isOpen={isPreviewOpen && !!previewImage}
-        // onRequestClose={() => setIsPreviewOpen(false)}
+        onRequestClose={() => setIsPreviewOpen(false)}
         contentLabel="이미지 미리보기"
         style={{
-          overlay: { backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000 },
+          overlay: { 
+            backgroundColor: 'rgba(0,0,0,0.7)', 
+            zIndex: 1000,
+            backdropFilter: 'blur(4px)'
+          },
           content: {
             margin: 'auto',
-            borderRadius: 16,
+            borderRadius: 0,
             padding: 0,
-            background: '#fff',
-            maxHeight: '50%',
+            background: '#000',
+            border: 'none',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
           }
         }}
         ariaHideApp={false}
       >
-        <div onClick={() => setIsPreviewOpen(false)}        >
+        <div className="w-full h-full flex flex-col items-center justify-center p-4 relative">
+          {/* 닫기 버튼 */}
+          <button
+            onClick={() => {
+              setIsPreviewOpen(false);
+              setImageRotation(0);
+            }}
+            className="absolute top-4 right-4 z-10 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-colors"
+          >
+            <X size={28} />
+          </button>
+
+          {/* 회전 버튼 */}
+          <div className="absolute bottom-8 flex gap-3 z-10">
+            <button
+              onClick={() => setImageRotation((prev) => (prev - 90) % 360)}
+              className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-colors"
+              title="반시계 방향 회전"
+            >
+              <RotateCcw size={24} />
+            </button>
+            <button
+              onClick={() => setImageRotation((prev) => (prev + 90) % 360)}
+              className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-colors"
+              title="시계 방향 회전"
+            >
+              <RotateCw size={24} />
+            </button>
+          </div>
+
+          {/* 이미지 */}
           {previewImage && (
-            <img
-              src={previewImage.previewUrl}
-              alt="미리보기"
-              style={{
-                borderRadius: 12,
-                boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
-                margin: 0,
-                display: 'block',
-                objectFit: 'contain',
-              }}
-            />
+            <div className="flex items-center justify-center h-full w-full">
+              <img
+                src={previewImage.previewUrl}
+                alt="미리보기"
+                style={{ transform: `rotate(${imageRotation}deg)` }}
+                className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl transition-transform duration-300"
+              />
+            </div>
           )}
         </div>
       </ReactModal>

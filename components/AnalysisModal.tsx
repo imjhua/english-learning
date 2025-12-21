@@ -103,7 +103,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
             const isSubItem = indentLevel > 0;
 
             return (
-              <li key={i} className={`flex items-start gap-2 ${isSubItem ? `text-sm` : ''}`} style={{ marginLeft: `${indentLevel * 1.5}rem` }}>
+              <li key={i} className={`flex items-start gap-2 ${isSubItem ? `text-sm` : ''}`} style={{ marginLeft: `${indentLevel * 0.75}rem` }}>
                 {!isSubItem && (
                   <span className="text-slate-400 shrink-0 select-none font-normal mt-0.5">•</span>
                 )}

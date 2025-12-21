@@ -73,13 +73,11 @@ const TextDisplay = forwardRef<TextDisplayHandle, TextDisplayProps>(({ blocks, o
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
-      <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
         <div className="flex items-center gap-2">
           <FileText size={18} className="text-indigo-500" />
           <span className="font-semibold text-slate-700">Text Analysis</span>
-        </div>
-        <div className="flex gap-2 items-center">
-          {/* 텍스트 토글 버튼 */}
+           {/* 텍스트 토글 버튼 */}
           <button
             type="button"
             className={`px-3 py-1 rounded-lg font-medium text-sm border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
@@ -89,21 +87,25 @@ const TextDisplay = forwardRef<TextDisplayHandle, TextDisplayProps>(({ blocks, o
           >
             {showAnalyzed ? '원본보기' : '분석보기'}
           </button>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center w-full sm:w-auto">
           {/* 음성 재생 컨트롤 */}
-          <SpeechControls
-            isPlayingAudio={speechPlayer.isPlayingAudio}
-            isAudioLoading={speechPlayer.isAudioLoading}
-            isAudioPrepared={speechPlayer.isAudioPrepared}
-            isDisabled={blocks.length === 0}
-            isAudioError={speechPlayer.isAudioError}
-            playbackRate={speechPlayer.playbackRate}
-            isRepeat={speechPlayer.isRepeat}
-            onPlay={speechPlayer.playFromStart}
-            onResume={speechPlayer.resumeAudio}
-            onStop={speechPlayer.stopAudio}
-            onSpeedChange={speechPlayer.setSpeed}
-            onRepeatChange={speechPlayer.setRepeat}
-          />
+          <div className="w-full sm:w-auto">
+            <SpeechControls
+              isPlayingAudio={speechPlayer.isPlayingAudio}
+              isAudioLoading={speechPlayer.isAudioLoading}
+              isAudioPrepared={speechPlayer.isAudioPrepared}
+              isDisabled={blocks.length === 0}
+              isAudioError={speechPlayer.isAudioError}
+              playbackRate={speechPlayer.playbackRate}
+              isRepeat={speechPlayer.isRepeat}
+              onPlay={speechPlayer.playFromStart}
+              onResume={speechPlayer.resumeAudio}
+              onStop={speechPlayer.stopAudio}
+              onSpeedChange={speechPlayer.setSpeed}
+              onRepeatChange={speechPlayer.setRepeat}
+            />
+          </div>
         </div>
       </div>
 

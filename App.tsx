@@ -7,7 +7,7 @@ import TextInput from './components/TextInput';
 import ReactModal from 'react-modal';
 import TextDisplay, { TextDisplayHandle } from './components/TextDisplay';
 import AnalysisModal from './components/AnalysisModal';
-import { Sparkles, Play, RotateCcw } from 'lucide-react';
+import { Sparkles, Play, RotateCcw, X, RotateCw } from 'lucide-react';
 
 const App: React.FC = () => {
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -24,6 +24,7 @@ const App: React.FC = () => {
   // 이미지 미리보기 모달 상태
   const [previewImage, setPreviewImage] = useState<UploadedImage | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [imageRotation, setImageRotation] = useState(0);
 
   const handleStartProcessing = async () => {
     if (images.length === 0) return;
@@ -113,6 +114,11 @@ const App: React.FC = () => {
     setInputText('');
     // 음성 재생 멈추기
     textDisplayRef.current?.stopAudio();
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setImageRotation(0);
   };
 
   const isProcessing = status === AppStatus.EXTRACTING || status === AppStatus.ANALYZING_SENTENCE;
@@ -266,35 +272,67 @@ const App: React.FC = () => {
       {/* 이미지 미리보기 모달 */}
       <ReactModal
         isOpen={isPreviewOpen && !!previewImage}
-        // onRequestClose={() => setIsPreviewOpen(false)}
+        onRequestClose={handleClosePreview}
         contentLabel="이미지 미리보기"
         style={{
-          overlay: { backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000 },
+          overlay: { backgroundColor: '#000000', zIndex: 1000 },
           content: {
-            margin: 'auto',
-            borderRadius: 16,
+            border: 'none',
+            borderRadius: 0,
             padding: 0,
-            background: '#fff',
-            maxHeight: '50%',
+            background: 'transparent',
+            inset: '0',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
           }
         }}
         ariaHideApp={false}
       >
-        <div onClick={() => setIsPreviewOpen(false)}        >
-          {previewImage && (
+        {previewImage && (
+          <div className="relative w-full h-full flex flex-col items-center justify-center">
+            {/* 닫기 버튼 - 우측 상단 */}
+            <button
+              onClick={handleClosePreview}
+              className="absolute top-8 right-8 p-3 bg-white/20 hover:bg-white/30 rounded-full transition-colors text-white z-10"
+              title="닫기"
+            >
+              <X size={24} />
+            </button>
+
+            {/* 이미지 */}
             <img
               src={previewImage.previewUrl}
-              alt="미리보기"
+              alt={previewImage.name}
               style={{
-                borderRadius: 12,
-                boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
-                margin: 0,
-                display: 'block',
+                transform: `rotate(${imageRotation}deg)`,
+                transition: 'transform 0.2s ease-out',
+                width: '100%',
+                height: '100%',
                 objectFit: 'contain',
               }}
             />
-          )}
-        </div>
+
+            {/* 회전 컨트롤 - 아래쪽 가운데 */}
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-4 bg-black/50 backdrop-blur-md px-6 py-3 rounded-full border border-white/20">
+              <button
+                onClick={() => setImageRotation((prev) => (prev + 270) % 360)}
+                className="p-2.5 hover:bg-white/20 rounded-full transition-colors text-white"
+                title="반시계방향 회전"
+              >
+                <RotateCcw size={24} />
+              </button>
+              <button
+                onClick={() => setImageRotation((prev) => (prev + 90) % 360)}
+                className="p-2.5 hover:bg-white/20 rounded-full transition-colors text-white"
+                title="시계방향 회전"
+              >
+                <RotateCw size={24} />
+              </button>
+            </div>
+          </div>
+        )}
       </ReactModal>
     </div>
   );

@@ -50,7 +50,7 @@ const AnalyzedTextBlockDisplay: React.FC<AnalyzedTextBlockDisplayProps> = ({ blo
           )}
           <div className="space-y-6">
             {block.paragraphs.map((paragraph, pIdx) => (
-              <div key={pIdx} className="text-slate-700 leading-9 text-[17px]">
+              <div key={pIdx} className="text-slate-700 leading-8 text-[17px]">
                 {paragraph.map((sentence, sIdx) => (
                   <span
                     key={sIdx}

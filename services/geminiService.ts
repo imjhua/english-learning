@@ -330,6 +330,134 @@ export const analyzeSentenceStructure = async (
 
 
 /**
+ * Analyze Direct Text Input for Rhythm
+ * Takes user-inputted text and returns rhythm analysis using the same logic as image extraction
+ */
+export const analyzeTextForRhythm = async (
+  text: string
+): Promise<RhythmAnalysisResult> => {
+  const model = "gemini-2.5-flash";
+
+  const promptText = `
+당신은 영어 교육 전문가입니다.
+
+아래에 제공된 영어 텍스트에 대해 리듬 분석을 수행하세요.
+
+입력 텍스트:
+"""
+${text}
+"""
+
+1. 입력된 텍스트를 적절한 문장 단위로 분리하세요.
+2. 각주 번호나 기호(예: ¹, ², ³ 등)는 원문에서 제거해야 합니다.
+3. 각 문장에 대해 리듬 분석을 적용하세요:
+   - 원어민 화자의 강세(강조)를 대문자로 표시하세요.
+   - 하이픈(-)은 절대 사용하지 마세요. 단어를 음절 단위로 나누지 마세요.
+   - 리듬 마커(•)는 **최소한으로, 꼭 끊어서 읽어야 하는 부분**에만 넣으세요.
+   - 강한 강세 단어가 끝나고 다음 단어와 자연스럽게 연음되지 않으며 명확히 띄어져야 하는 부분에만 • 를 넣으세요.
+   - 약한 단어들 사이나, 단어들이 자연스럽게 연결되는 부분에는 절대 넣지 마세요.
+
+4. [fullTextBlocks] 필드:
+   - "source": "Direct Input"
+   - "title": "" (빈 문자열)
+   - "paragraphs": 리듬 마커(•)가 포함된 문장 리스트
+
+5. [originalText] 필드:
+   - 반드시 fullTextBlocks와 동일한 JSON 구조로 반환하세요.
+   - 각 블록의 텍스트(paragraphs)는 원본 입력 텍스트를 사용하되, 각주 번호나 기호는 제거하세요.
+   - 대소문자, 공백, 줄바꿈, 구두점을 포함한 모든 원본 서식을 유지하세요.
+   - 리듬 마커(•), 대문자 변형, 강조 표시, 추가 기호를 절대 적용하지 마세요.
+
+6. 결과를 다음 JSON 형식으로만 반환하세요 (마크다운 코드블록 없음):
+{
+  "fullTextBlocks": [
+    {
+      "source": "Direct Input",
+      "title": "",
+      "paragraphs": [
+        ["리듬 마커가 포함된 첫 번째 문장", "리듬 마커가 포함된 두 번째 문장"]
+      ]
+    }
+  ],
+  "originalText": [
+    {
+      "source": "Direct Input",
+      "title": "",
+      "paragraphs": [
+        ["원본 첫 번째 문장", "원본 두 번째 문장"]
+      ]
+    }
+  ]
+}
+
+결과는 반드시 JSON 형식으로만 반환하며, 키는 fullTextBlocks 와 originalText 두 가지만 포함해야 합니다.
+`;
+
+  const schema: Schema = {
+    type: Type.OBJECT,
+    properties: {
+      fullTextBlocks: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            source: { type: Type.STRING },
+            title: { type: Type.STRING },
+            paragraphs: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+              },
+            },
+          },
+          required: ["source", "title", "paragraphs"],
+        },
+      },
+      originalText: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            source: { type: Type.STRING },
+            title: { type: Type.STRING },
+            paragraphs: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+              },
+            },
+          },
+          required: ["source", "title", "paragraphs"],
+        },
+      },
+    },
+    required: ["fullTextBlocks", "originalText"],
+  };
+
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: promptText,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: schema,
+      },
+    });
+
+    if (!response.text) {
+      throw new Error("No response from AI");
+    }
+
+    return JSON.parse(cleanJsonString(response.text)) as RhythmAnalysisResult;
+  } catch (error) {
+    console.error("Text Rhythm Analysis Error:", error);
+    throw error;
+  }
+};
+
+/**
  * Step 3: Generate Speech (TTS)
  * Converts text to speech using Gemini's audio generation capabilities.
  */

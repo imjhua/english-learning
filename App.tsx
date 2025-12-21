@@ -1,8 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { UploadedImage, TextBlock, RhythmAnalysisResult, SentenceAnalysisResult, AppStatus } from './types';
-import { extractAndAnalyzeRhythm, analyzeSentenceStructure } from './services/geminiService';
+import { extractAndAnalyzeRhythm, analyzeSentenceStructure, analyzeTextForRhythm } from './services/geminiService';
 import ImageUploader from './components/ImageUploader';
+import TextInput from './components/TextInput';
 import ReactModal from 'react-modal';
 import TextDisplay from './components/TextDisplay';
 import AnalysisModal from './components/AnalysisModal';
@@ -12,6 +13,8 @@ const App: React.FC = () => {
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
   const [rhythmResult, setRhythmResult] = useState<RhythmAnalysisResult | null>(null);
+  const [inputText, setInputText] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'upload' | 'text'>('upload');
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -74,12 +77,40 @@ const App: React.FC = () => {
     }
   };
 
+  const handleTextSubmit = async (text: string) => {
+    setStatus(AppStatus.EXTRACTING);
+    setRhythmResult(null);
+    setInputText('');
+
+    try {
+      const result = await analyzeTextForRhythm(text);
+      setRhythmResult(result);
+      setStatus(AppStatus.READY);
+    } catch (error) {
+      console.error(error);
+      setStatus(AppStatus.ERROR);
+      let message = '텍스트 분석에 실패했습니다.\n';
+      if (error instanceof SyntaxError) {
+        message += '서버에서 잘못된 데이터를 반환했습니다.';
+      } else if (error instanceof TypeError) {
+        message += '서버와의 통신에 문제가 있습니다.';
+      } else if (error instanceof Error) {
+        message += error.message;
+      } else {
+        message += '알 수 없는 오류가 발생했습니다.';
+      }
+      message += '\n다시 시도해주세요.';
+      alert(message);
+    }
+  };
+
   const handleReset = () => {
     setImages([]);
     setRhythmResult(null);
     setStatus(AppStatus.IDLE);
     setSentenceAnalysis(null);
     setSelectedSentence(null);
+    setInputText('');
   };
 
   const isProcessing = status === AppStatus.EXTRACTING || status === AppStatus.ANALYZING_SENTENCE;
@@ -129,38 +160,79 @@ const App: React.FC = () => {
         {/* Section 1: Upload */}
         <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-slate-200 p-3 sm:p-5 space-y-4 w-full">
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Input Sources</h2>
-          <ImageUploader
-            images={images}
-            onImagesChange={(newImages) => {
-              setImages(newImages);
-              // If images become empty, reset status
-              if (newImages.length === 0) {
-                setRhythmResult(null);
-                setStatus(AppStatus.IDLE);
-              }
-            }}
-            isProcessing={isProcessing}
-            onImageClick={(img) => {
-              setPreviewImage(img);
-              setIsPreviewOpen(true);
-            }}
-          />
+          
+          {/* Tabs */}
+          <div className="flex gap-2 border-b border-slate-200">
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`px-4 py-2.5 font-semibold text-sm border-b-2 transition-all ${
+                activeTab === 'upload'
+                  ? 'text-indigo-600 border-indigo-600'
+                  : 'text-slate-500 border-transparent hover:text-slate-700'
+              }`}
+            >
+              Upload & Camera
+            </button>
+            <button
+              onClick={() => setActiveTab('text')}
+              className={`px-4 py-2.5 font-semibold text-sm border-b-2 transition-all ${
+                activeTab === 'text'
+                  ? 'text-emerald-600 border-emerald-600'
+                  : 'text-slate-500 border-transparent hover:text-slate-700'
+              }`}
+            >
+              Text Input
+            </button>
+          </div>
 
-          {/* Analysis Button - Visible whenever we have images and are not processing */}
-          {canStartAnalysis && (
-            <div>
-              <button
-                onClick={handleStartProcessing}
-                disabled={isProcessing}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait"
-              >
-                <>
-                  <Play size={20} fill="currentColor" />
-                  {rhythmResult ? "Restart Analysis" : "Start Analysis"}
-                </>
-              </button>
-            </div>
-          )}
+          {/* Tab Content */}
+          <div className="space-y-4">
+            {activeTab === 'upload' && (
+              <>
+                <ImageUploader
+                  images={images}
+                  onImagesChange={(newImages) => {
+                    setImages(newImages);
+                    // If images become empty, reset status
+                    if (newImages.length === 0) {
+                      setRhythmResult(null);
+                      setStatus(AppStatus.IDLE);
+                    }
+                  }}
+                  isProcessing={isProcessing}
+                  onImageClick={(img) => {
+                    setPreviewImage(img);
+                    setIsPreviewOpen(true);
+                  }}
+                />
+
+                {/* Analysis Button - Visible only in upload tab */}
+                {canStartAnalysis && (
+                  <div>
+                    <button
+                      onClick={handleStartProcessing}
+                      disabled={isProcessing}
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait"
+                    >
+                      <>
+                        <Play size={20} fill="currentColor" />
+                        {rhythmResult ? "Restart Analysis" : "Start Analysis"}
+                      </>
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {activeTab === 'text' && (
+              <TextInput
+                onTextSubmit={handleTextSubmit}
+                isProcessing={isProcessing}
+                inputText={inputText}
+                onInputChange={setInputText}
+              />
+            )}
+          </div>
         </div>
 
         {/* Section 2: Text Display */}

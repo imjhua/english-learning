@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Type, X } from 'lucide-react';
 
 interface TextInputProps {
@@ -6,6 +6,7 @@ interface TextInputProps {
   isProcessing: boolean;
   inputText: string;
   onInputChange: (text: string) => void;
+  isTabActive: boolean;
 }
 
 const TextInput: React.FC<TextInputProps> = ({
@@ -13,19 +14,37 @@ const TextInput: React.FC<TextInputProps> = ({
   isProcessing,
   inputText,
   onInputChange,
+  isTabActive,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Text Input 탭이 활성화되면 자동으로 expanded
+  useEffect(() => {
+    if (isTabActive && !isExpanded) {
+      setIsExpanded(true);
+    }
+  }, [isTabActive]);
+
+  // expanded 상태가 되면 textarea에 포커싱
+  useEffect(() => {
+    if (isExpanded && textareaRef.current) {
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 50);
+    }
+  }, [isExpanded]);
 
   const handleSubmit = () => {
     if (inputText.trim()) {
       onTextSubmit(inputText.trim());
-      setIsExpanded(false);
+      // 분석 후에도 입력창은 계속 보이도록 유지 (setIsExpanded(false) 제거)
     }
   };
 
   const handleClear = () => {
     onInputChange('');
-    setIsExpanded(false);
+    textareaRef.current?.focus();
   };
 
   return (
@@ -43,6 +62,7 @@ const TextInput: React.FC<TextInputProps> = ({
       ) : (
         <div className="bg-white border-2 border-emerald-200 rounded-xl p-4 space-y-3 shadow-sm">
           <textarea
+            ref={textareaRef}
             value={inputText}
             onChange={(e) => onInputChange(e.target.value)}
             placeholder="Enter English text or sentences here..."

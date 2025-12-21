@@ -7,6 +7,8 @@ export const useSpeechPlayer = (text: string) => {
   const [isAudioPrepared, setIsAudioPrepared] = useState(false);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [isRepeat, setIsRepeat] = useState(true); // 기본값: 반복 켜짐
+  const [isAudioError, setIsAudioError] = useState(false); // 에러 상태 추가
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
@@ -71,6 +73,7 @@ export const useSpeechPlayer = (text: string) => {
       source.buffer = audioBuffer;
       source.playbackRate.value = playbackRate;
       source.connect(ctx.destination);
+      source.loop = isRepeat; // 반복 설정 적용
       source.onended = () => {
         setIsPlayingAudio(false);
         sourceNodeRef.current = null;
@@ -109,6 +112,7 @@ export const useSpeechPlayer = (text: string) => {
       source.buffer = audioBuffer;
       source.playbackRate.value = playbackRate;
       source.connect(ctx.destination);
+      source.loop = isRepeat; // 반복 설정 적용
       source.onended = () => {
         setIsPlayingAudio(false);
         sourceNodeRef.current = null;
@@ -144,6 +148,9 @@ export const useSpeechPlayer = (text: string) => {
 
     setIsAudioLoading(true);
     setIsAudioPrepared(false);
+    setIsPlayingAudio(false);
+    setIsAudioError(false); // 새 텍스트 로딩 시작할 때 에러 상태 초기화
+    startOffsetRef.current = 0;
 
     (async () => {
       try {
@@ -160,12 +167,21 @@ export const useSpeechPlayer = (text: string) => {
         setAudioBuffer(buf);
         setIsAudioPrepared(true);
       } catch (e) {
+        console.error('Speech Generation Error:', e);
+        setIsAudioError(true); // 에러 발생 시 에러 상태 설정
         setIsAudioPrepared(false);
       } finally {
         setIsAudioLoading(false);
       }
     })();
   }, [text]);
+
+  // 오디오 준비 완료 시 자동 재생
+  useEffect(() => {
+    if (isAudioPrepared && audioBuffer && !isPlayingAudio && audioContextRef.current) {
+      playFromStart();
+    }
+  }, [isAudioPrepared, audioBuffer]);
 
   // 언마운트 시 정리
   useEffect(() => {
@@ -177,6 +193,13 @@ export const useSpeechPlayer = (text: string) => {
       }
     };
   }, []);
+
+  // 반복 설정 변경 시 현재 재생 중인 오디오에 즉시 적용
+  useEffect(() => {
+    if (sourceNodeRef.current && isPlayingAudio) {
+      sourceNodeRef.current.loop = isRepeat;
+    }
+  }, [isRepeat, isPlayingAudio]);
 
   // 배속 조절
   const setSpeed = (rate: number) => {
@@ -192,9 +215,12 @@ export const useSpeechPlayer = (text: string) => {
     isAudioLoading,
     isAudioPrepared,
     playbackRate,
+    isRepeat,
+    isAudioError, // 에러 상태 반환
     playFromStart,
     resumeAudio,
     stopAudio,
     setSpeed,
+    setRepeat: setIsRepeat,
   };
 };

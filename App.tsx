@@ -5,7 +5,7 @@ import { extractAndAnalyzeRhythm, analyzeSentenceStructure, analyzeTextForRhythm
 import ImageUploader from './components/ImageUploader';
 import TextInput from './components/TextInput';
 import ReactModal from 'react-modal';
-import TextDisplay from './components/TextDisplay';
+import TextDisplay, { TextDisplayHandle } from './components/TextDisplay';
 import AnalysisModal from './components/AnalysisModal';
 import { Sparkles, Play, RotateCcw } from 'lucide-react';
 
@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [rhythmResult, setRhythmResult] = useState<RhythmAnalysisResult | null>(null);
   const [inputText, setInputText] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'upload' | 'text'>('upload');
+  const textDisplayRef = useRef<TextDisplayHandle>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -80,7 +81,6 @@ const App: React.FC = () => {
   const handleTextSubmit = async (text: string) => {
     setStatus(AppStatus.EXTRACTING);
     setRhythmResult(null);
-    setInputText('');
 
     try {
       const result = await analyzeTextForRhythm(text);
@@ -111,6 +111,8 @@ const App: React.FC = () => {
     setSentenceAnalysis(null);
     setSelectedSentence(null);
     setInputText('');
+    // 음성 재생 멈추기
+    textDisplayRef.current?.stopAudio();
   };
 
   const isProcessing = status === AppStatus.EXTRACTING || status === AppStatus.ANALYZING_SENTENCE;
@@ -230,6 +232,7 @@ const App: React.FC = () => {
                 isProcessing={isProcessing}
                 inputText={inputText}
                 onInputChange={setInputText}
+                isTabActive={activeTab === 'text'}
               />
             )}
           </div>
@@ -238,6 +241,7 @@ const App: React.FC = () => {
         {/* Section 2: Text Display */}
         <div className="h-[600px] w-full" ref={analysisRef}>
           <TextDisplay
+            ref={textDisplayRef}
             blocks={rhythmResult?.fullTextBlocks || []}
             originalText={originalText}
             onSentenceClick={handleSentenceClick}

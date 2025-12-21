@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { TextBlock } from '../types';
 import { FileText, Loader2 } from 'lucide-react';
 import OriginalTextBlockDisplay from './OriginalTextBlockDisplay';
@@ -14,7 +14,11 @@ interface TextDisplayProps {
   isAnalzying: boolean;
 }
 
-const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSentenceClick, isAnalzying }) => {
+export interface TextDisplayHandle {
+  stopAudio: () => void;
+}
+
+const TextDisplay = forwardRef<TextDisplayHandle, TextDisplayProps>(({ blocks, originalText, onSentenceClick, isAnalzying }, ref) => {
   // 전체 텍스트 합치기 (리듬 마커 포함)
   const getAllText = () =>
     blocks.map(block =>
@@ -26,6 +30,14 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSente
 
   // 음성 재생 hook
   const speechPlayer = useSpeechPlayer(blocks.length > 0 ? getAllText() : '');
+
+  // forwardRef로 부모에서 stopAudio 호출 가능하게 노출
+  useImperativeHandle(ref, () => ({
+    stopAudio: () => {
+      speechPlayer.stopAudio();
+    },
+  }), [speechPlayer]);
+
   // 1. Loading State (Initial Extraction)
   // If there are no blocks yet but we are analyzing, show the loading spinner.
   if (blocks.length === 0 && isAnalzying) {
@@ -83,11 +95,14 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSente
             isAudioLoading={speechPlayer.isAudioLoading}
             isAudioPrepared={speechPlayer.isAudioPrepared}
             isDisabled={blocks.length === 0}
+            isAudioError={speechPlayer.isAudioError}
             playbackRate={speechPlayer.playbackRate}
+            isRepeat={speechPlayer.isRepeat}
             onPlay={speechPlayer.playFromStart}
             onResume={speechPlayer.resumeAudio}
             onStop={speechPlayer.stopAudio}
             onSpeedChange={speechPlayer.setSpeed}
+            onRepeatChange={speechPlayer.setRepeat}
           />
         </div>
       </div>
@@ -102,6 +117,8 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSente
       </div>
     </div>
   );
-};
+});
+
+TextDisplay.displayName = 'TextDisplay';
 
 export default TextDisplay;

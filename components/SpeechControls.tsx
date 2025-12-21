@@ -1,14 +1,16 @@
 import React from 'react';
-import { Volume2, Square, Play, Loader2 } from 'lucide-react';
+import { Volume2, Square, Play, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SpeechControlsProps {
   isPlayingAudio: boolean;
   isAudioLoading: boolean;
   isAudioPrepared: boolean;
   isDisabled: boolean;
+  playbackRate: number;
   onPlay: () => Promise<void>;
   onResume: () => Promise<void>;
   onStop: () => void;
+  onSpeedChange: (rate: number) => void;
 }
 
 const SpeechControls: React.FC<SpeechControlsProps> = ({
@@ -16,52 +18,87 @@ const SpeechControls: React.FC<SpeechControlsProps> = ({
   isAudioLoading,
   isAudioPrepared,
   isDisabled,
+  playbackRate,
   onPlay,
   onResume,
   onStop,
+  onSpeedChange,
 }) => {
   return (
-    <div className="flex gap-2 items-center">
-      {/* 처음부터 재생 버튼 */}
-      <button
-        type="button"
-        aria-label="처음부터 재생"
-        className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
-          ${isAudioLoading || isPlayingAudio ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed opacity-60' : 'border-indigo-200 bg-white text-indigo-600 hover:bg-indigo-50'}`}
-        onClick={onPlay}
-        disabled={isDisabled || isAudioLoading || isPlayingAudio || !isAudioPrepared}
-        title="다시 재생"
-      >
-        <Volume2 size={20} />
-      </button>
+    <div className="flex gap-4 items-center">
+      {/* 스피커 제어 영역 */}
+      <div className="flex gap-2 items-center">
+        {/* 처음부터 재생 버튼 */}
+        <button
+          type="button"
+          aria-label="처음부터 재생"
+          className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
+            ${isAudioLoading || isPlayingAudio ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed opacity-60' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50'}`}
+          onClick={onPlay}
+          disabled={isDisabled || isAudioLoading || isPlayingAudio || !isAudioPrepared}
+          title="다시 재생"
+        >
+          <Volume2 size={20} />
+        </button>
 
-      {/* 정지/이어듣기 버튼 */}
-      {isPlayingAudio ? (
+        {/* 정지/이어듣기 버튼 */}
+        {isPlayingAudio ? (
+          <button
+            type="button"
+            aria-label="음성 재생 중지"
+            className="p-2 rounded-full hover:bg-red-100 transition-colors text-red-500 focus:outline-none focus:ring-2 focus:ring-red-300"
+            onClick={onStop}
+            title="재생 중지"
+          >
+            <Square size={20} />
+          </button>
+        ) : (
+          <button
+            type="button"
+            aria-label="이어듣기"
+            className="p-2 rounded-full hover:bg-indigo-100 transition-colors text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            onClick={onResume}
+            title="이어듣기"
+            disabled={isDisabled || isAudioLoading || !isAudioPrepared}
+          >
+            {isAudioLoading ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <Play size={20} />
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* 배속 조절 영역 */}
+      <div className="flex gap-1 items-center border border-indigo-200 rounded-lg px-2 py-1">
         <button
           type="button"
-          aria-label="음성 재생 중지"
-          className="p-2 rounded-full hover:bg-red-100 transition-colors text-red-500 focus:outline-none focus:ring-2 focus:ring-red-300"
-          onClick={onStop}
-          title="재생 중지"
+          aria-label="배속 감소"
+          className="p-1 rounded hover:bg-indigo-100 transition-colors text-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-300"
+          onClick={() => onSpeedChange(Math.max(0.5, playbackRate - 0.1))}
+          disabled={isDisabled || isAudioLoading || !isAudioPrepared || playbackRate <= 0.5}
+          title="배속 감소"
         >
-          <Square size={20} />
+          <ChevronLeft size={16} />
         </button>
-      ) : (
+
+        {/* 현재 배속 표시 */}
+        <span className="text-xs font-semibold text-indigo-600 w-8 text-center">
+          {playbackRate.toFixed(1)}
+        </span>
+
         <button
           type="button"
-          aria-label="이어듣기"
-          className="p-2 rounded-full hover:bg-indigo-100 transition-colors text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          onClick={onResume}
-          title="이어듣기"
-          disabled={isDisabled || isAudioLoading || !isAudioPrepared}
+          aria-label="배속 증가"
+          className="p-1 rounded hover:bg-indigo-100 transition-colors text-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-300"
+          onClick={() => onSpeedChange(Math.min(1.5, playbackRate + 0.1))}
+          disabled={isDisabled || isAudioLoading || !isAudioPrepared || playbackRate >= 1.5}
+          title="배속 증가"
         >
-          {isAudioLoading ? (
-            <Loader2 size={20} className="animate-spin" />
-          ) : (
-            <Play size={20} />
-          )}
+          <ChevronRight size={16} />
         </button>
-      )}
+      </div>
     </div>
   );
 };

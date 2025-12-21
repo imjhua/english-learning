@@ -83,9 +83,11 @@ const TextDisplay: React.FC<TextDisplayProps> = ({ blocks, originalText, onSente
             isAudioLoading={speechPlayer.isAudioLoading}
             isAudioPrepared={speechPlayer.isAudioPrepared}
             isDisabled={blocks.length === 0}
+            playbackRate={speechPlayer.playbackRate}
             onPlay={speechPlayer.playFromStart}
             onResume={speechPlayer.resumeAudio}
             onStop={speechPlayer.stopAudio}
+            onSpeedChange={speechPlayer.setSpeed}
           />
         </div>
       </div>

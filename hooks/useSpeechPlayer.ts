@@ -6,6 +6,7 @@ export const useSpeechPlayer = (text: string) => {
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [isAudioPrepared, setIsAudioPrepared] = useState(false);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  const [playbackRate, setPlaybackRate] = useState(1.0);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
@@ -68,6 +69,7 @@ export const useSpeechPlayer = (text: string) => {
       }
       const source = ctx.createBufferSource();
       source.buffer = audioBuffer;
+      source.playbackRate.value = playbackRate;
       source.connect(ctx.destination);
       source.onended = () => {
         setIsPlayingAudio(false);
@@ -105,6 +107,7 @@ export const useSpeechPlayer = (text: string) => {
       }
       const source = ctx.createBufferSource();
       source.buffer = audioBuffer;
+      source.playbackRate.value = playbackRate;
       source.connect(ctx.destination);
       source.onended = () => {
         setIsPlayingAudio(false);
@@ -175,12 +178,23 @@ export const useSpeechPlayer = (text: string) => {
     };
   }, []);
 
+  // 배속 조절
+  const setSpeed = (rate: number) => {
+    setPlaybackRate(rate);
+    // 현재 재생 중이면 즉시 속도 적용
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.playbackRate.value = rate;
+    }
+  };
+
   return {
     isPlayingAudio,
     isAudioLoading,
     isAudioPrepared,
+    playbackRate,
     playFromStart,
     resumeAudio,
     stopAudio,
+    setSpeed,
   };
 };

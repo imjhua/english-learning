@@ -65,6 +65,8 @@ const App: React.FC = () => {
   const handleSentenceClick = async (sentence: string) => {
     setSelectedSentence(sentence);
     setIsModalOpen(true);
+    // 모달 열 때 음성 일시정지 (재생 위치 저장)
+    textDisplayRef.current?.stopAudio();
     setSentenceAnalysis(null);
     setStatus(AppStatus.ANALYZING_SENTENCE);
 
@@ -121,6 +123,10 @@ const App: React.FC = () => {
     setImageRotation(0);
   };
 
+  // TextDisplay 비활성화: 전체 텍스트 추출 중일 때만
+  const isExtracting = status === AppStatus.EXTRACTING;
+  
+  // UI 버튼 비활성화: 추출 또는 문장 분석 중일 때
   const isProcessing = status === AppStatus.EXTRACTING || status === AppStatus.ANALYZING_SENTENCE;
 
   const canStartAnalysis = images.length > 0
@@ -142,19 +148,19 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Navbar */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between lg:max-w-4xl lg:mx-auto">
-          <div className="flex items-center gap-2">
-            <div className="bg-indigo-600 p-1.5 rounded-lg">
-              <Sparkles size={20} className="text-white" />
+        <div className="w-full px-2 sm:px-4 lg:px-8 h-14 sm:h-16 flex items-center justify-between lg:max-w-4xl lg:mx-auto">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="bg-indigo-600 p-1 sm:p-1.5 rounded-lg">
+              <Sparkles size={18} className="text-white" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">SpeakFlow AI</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">SpeakFlow AI</h1>
           </div>
 
           {(images.length > 0 || status !== AppStatus.IDLE) && (
             <button
               onClick={handleReset}
               disabled={isProcessing}
-              className="flex items-center gap-1.5 text-slate-500 hover:text-red-600 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-50"
+              className="flex items-center gap-1.5 text-slate-500 hover:text-red-600 font-medium text-xs sm:text-sm transition-colors px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-slate-50"
             >
               <RotateCcw size={16} />
               Reset
@@ -163,17 +169,17 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 space-y-6 lg:max-w-4xl lg:mx-auto">
+      <main className="flex-1 w-full p-2 sm:p-4 lg:p-8 space-y-3 sm:space-y-6 lg:max-w-4xl lg:mx-auto">
 
         {/* Section 1: Upload */}
-        <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-slate-200 p-3 sm:p-5 space-y-4 w-full">
-          <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Input Sources</h2>
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-slate-200 p-2 sm:p-5 space-y-2 sm:space-y-4 w-full">
+          <h2 className="text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-wider">Input Sources</h2>
           
           {/* Tabs */}
           <div className="flex gap-2 border-b border-slate-200">
             <button
               onClick={() => setActiveTab('upload')}
-              className={`px-4 py-2.5 font-semibold text-sm border-b-2 transition-all ${
+              className={`px-2 sm:px-4 py-1.5 sm:py-2.5 font-semibold text-xs sm:text-sm border-b-2 transition-all ${
                 activeTab === 'upload'
                   ? 'text-indigo-600 border-indigo-600'
                   : 'text-slate-500 border-transparent hover:text-slate-700'
@@ -183,7 +189,7 @@ const App: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('text')}
-              className={`px-4 py-2.5 font-semibold text-sm border-b-2 transition-all ${
+              className={`px-2 sm:px-4 py-1.5 sm:py-2.5 font-semibold text-xs sm:text-sm border-b-2 transition-all ${
                 activeTab === 'text'
                   ? 'text-emerald-600 border-emerald-600'
                   : 'text-slate-500 border-transparent hover:text-slate-700'
@@ -194,7 +200,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-4">
             {activeTab === 'upload' && (
               <>
                 <ImageUploader
@@ -251,7 +257,7 @@ const App: React.FC = () => {
             blocks={rhythmResult?.fullTextBlocks || []}
             originalText={originalText}
             onSentenceClick={handleSentenceClick}
-            isAnalzying={isProcessing}
+            isAnalzying={isExtracting}
           />
         </div>
 

@@ -1,5 +1,5 @@
 
-import React, { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useEffect, useMemo } from 'react';
 import { TextBlock } from '../types';
 import { FileText, Loader2 } from 'lucide-react';
 import OriginalTextBlockDisplay from './OriginalTextBlockDisplay';
@@ -19,17 +19,19 @@ export interface TextDisplayHandle {
 }
 
 const TextDisplay = forwardRef<TextDisplayHandle, TextDisplayProps>(({ blocks, originalText, onSentenceClick, isAnalzying }, ref) => {
-  // 전체 텍스트 합치기 (리듬 마커 포함)
-  const getAllText = () =>
-    blocks.map(block =>
-      block.paragraphs.map(paragraph => paragraph.join(' ')).join('\n')
-    ).join('\n\n');
-
   // 토글 상태: true면 분석 텍스트, false면 원본 텍스트
   const [showAnalyzed, setShowAnalyzed] = useState(true);
 
+  // 전체 텍스트 합치기 (리듬 마커 포함) - memoize to prevent unnecessary re-renders
+  const fullText = useMemo(() => 
+    blocks.map(block =>
+      block.paragraphs.map(paragraph => paragraph.join(' ')).join('\n')
+    ).join('\n\n'),
+    [blocks]
+  );
+
   // 음성 재생 hook
-  const speechPlayer = useSpeechPlayer(blocks.length > 0 ? getAllText() : '');
+  const speechPlayer = useSpeechPlayer(blocks.length > 0 ? fullText : '');
 
   // 분석 중일 때 음성 재생 중지
   useEffect(() => {
@@ -80,16 +82,16 @@ const TextDisplay = forwardRef<TextDisplayHandle, TextDisplayProps>(({ blocks, o
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
-      <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="bg-slate-50 px-2 py-2 sm:px-4 sm:py-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
         <div className="flex items-center justify-between w-full sm:w-auto">
           <div className="flex items-center gap-2">
             <FileText size={18} className="text-indigo-500" />
-            <span className="font-semibold text-slate-700">Text Analysis</span>
+            <span className="font-semibold text-slate-700 text-sm sm:text-base">Text Analysis</span>
           </div>
            {/* 텍스트 토글 버튼 */}
           <button
             type="button"
-            className={`ml-2 sm:ml-3 px-3 py-1 rounded-lg font-medium text-sm border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
+            className={`ml-1 sm:ml-3 px-2 py-1 sm:px-3 sm:py-1 rounded-lg font-medium text-xs sm:text-sm border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300
               ${showAnalyzed ? 'bg-indigo-50 text-indigo-700 border-indigo-300' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
             onClick={() => setShowAnalyzed(!showAnalyzed)}
             title={showAnalyzed ? '원본 텍스트 보기' : '분석 텍스트 보기'}
@@ -116,7 +118,7 @@ const TextDisplay = forwardRef<TextDisplayHandle, TextDisplayProps>(({ blocks, o
         </div>
       </div>
 
-      <div className="overflow-y-auto p-6 space-y-8 flex-1">
+      <div className="overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-8 flex-1">
         {/* 토글 상태에 따라 텍스트 렌더링 */}
         {!showAnalyzed ? (
           <OriginalTextBlockDisplay blocks={originalText} />

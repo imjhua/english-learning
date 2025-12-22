@@ -42,18 +42,21 @@ export const useSpeechPlayer = (text: string) => {
     return audioBuffer;
   };
 
-  // 오디오 중지
+  // 오디오 중지 (재생 위치 저장)
   const stopAudio = () => {
     if (sourceNodeRef.current) {
       if (audioContextRef.current && audioBuffer && isPlayingAudio) {
-        const elapsed = audioContextRef.current.currentTime - startTimeRef.current;
-        startOffsetRef.current = Math.min(
-          (startOffsetRef.current || 0) + elapsed,
-          audioBuffer.duration
-        );
+        const currentTime = audioContextRef.current.currentTime;
+        const elapsed = currentTime - startTimeRef.current;
+        const newOffset = startOffsetRef.current + elapsed;
+        startOffsetRef.current = Math.min(newOffset, audioBuffer.duration);
       }
-      sourceNodeRef.current.stop();
-      sourceNodeRef.current.disconnect();
+      try {
+        sourceNodeRef.current.stop();
+        sourceNodeRef.current.disconnect();
+      } catch (e) {
+        // 이미 중지된 경우 무시
+      }
       sourceNodeRef.current = null;
     }
     setIsPlayingAudio(false);
@@ -102,7 +105,6 @@ export const useSpeechPlayer = (text: string) => {
   // 이어듣기
   const resumeAudio = async () => {
     if (isPlayingAudio || !audioBuffer || !audioContextRef.current) return;
-    stopAudio();
     const ctx = audioContextRef.current;
     try {
       if (ctx.state === 'suspended') {
@@ -118,7 +120,9 @@ export const useSpeechPlayer = (text: string) => {
         sourceNodeRef.current = null;
       };
       startTimeRef.current = ctx.currentTime;
-      source.start(0, startOffsetRef.current || 0);
+      // startOffsetRef.current에서 시작 (정지된 위치부터)
+      const offset = Math.min(startOffsetRef.current || 0, audioBuffer.duration);
+      source.start(0, offset);
       sourceNodeRef.current = source;
       setIsPlayingAudio(true);
     } catch (error) {

@@ -39,18 +39,18 @@ const AnalyzedTextBlockDisplay: React.FC<AnalyzedTextBlockDisplayProps> = ({ blo
   return (
     <>
       {blocks.map((block, bIdx) => (
-        <div key={bIdx} className="space-y-4">
+        <div key={bIdx} className="space-y-2 sm:space-y-4">
           <div className="flex items-center gap-2">
             <span className="bg-slate-100 text-slate-500 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-bold">
               {block.source || `Image ${bIdx + 1}`}
             </span>
           </div>
           {block.title && block.title.trim() !== '' && (
-            <div className="font-bold text-xl text-slate-800 mb-2">{block.title}</div>
+            <div className="font-bold text-lg sm:text-xl text-slate-800 mb-1 sm:mb-2">{block.title}</div>
           )}
-          <div className="space-y-6">
+          <div className="space-y-3 sm:space-y-6">
             {block.paragraphs.map((paragraph, pIdx) => (
-              <div key={pIdx} className="text-slate-700 leading-8 text-[17px]">
+              <div key={pIdx} className="text-slate-700 leading-7 sm:leading-8 text-sm sm:text-[17px]">
                 {paragraph.map((sentence, sIdx) => (
                   <span
                     key={sIdx}

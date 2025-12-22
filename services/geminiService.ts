@@ -104,26 +104,27 @@ const promptText = `
    - 하이픈(-)은 절대 사용하지 마세요. 단어를 음절 단위로 나누지 마세요.
    
    ⭐⭐⭐ 리듬 마커(•) 사용 규칙 (매우 중요 - 반드시 정확하게 적용):
-   - 리듬 마커는 영어 발화의 자연스러운 리듬을 표현하는 핵심 요소입니다.
-   - "최소한으로"는 불필요한 마커를 넣지 말라는 의미입니다. 필요한 곳에는 반드시 넣으세요.
-   - 강한 강세의 단어 바로 다음에, 다음 단어와의 연결이 명확히 끊어지는 경우에만 • 를 넣으세요.
-   - 약한 단어들 사이나 자연스럽게 연음되는 부분에는 절대 넣지 마세요.
+   - 리듬 마커는 원어민이 문장을 읽을 때 실제로 호흡을 쉬거나 일시정지하는 지점을 표현합니다.
+   - 마커는 의미 단위(chunk)의 끝에 위치하며, 문장의 자연스러운 흐름과 호흡을 반영합니다.
+   - 마커를 넣을 때: 사람이 자연스럽게 숨을 쉬거나 생각을 정리하기 위해 멈추는 지점
+   - 마커를 넣지 않을 때: 자연스럽게 계속 연음되거나 호흡이 필요 없는 부분
    
    ✓ 마커를 넣는 경우 (반드시):
-     * 강한 강세 단어 바로 다음 (예: "TRUMP •")
-     * 명확한 발음 끊김이 필요한 부분 (예: "DEAL •")
-     * 약한 단어 앞 강세 단어 이후 (예: "approved •")
+     * 의미 단위(주어-동사, 주요 정보)가 끝나고 새로운 정보가 시작되는 지점
+     * 강한 강세를 가진 단어 뒤에 약한 소리나 새로운 생각이 시작되는 지점
+     * 긴 문장에서 호흡이 필요한 구간 (예: "real estate downturn is worsening, • with S&P Global Ratings forecasting")
+     * 예시: "China's REAL ESTATE downTURN • is WORSening, • with S&P Global RATings forECasting • an 8% DROP •"
    
    ✗ 마커를 넣지 않는 경우 (절대 금지):
-     * 약한 단어들 사이 (예: "has been" - 마커 X)
-     * 자연스럽게 연음되는 부분 (예: "approved a" - 마커 X)
-     * 같은 강도의 약한 단어들 (예: "and the" - 마커 X)
+     * 약한 전치사나 관사 앞 (예: "is worsening with S&P" - with 앞에 마커 X)
+     * 자연스럽게 한 호흡으로 이어지는 부분 (예: "with S&P Global Ratings" - 내부에 마커 X)
+     * 단어 사이의 모든 위치에 마커를 넣는 과도한 표시
    
    구체적 예시:
-   - ✓ "PREsident DONald TRUMP • has apPROVED a DEAL •" (강세 뒤 명확한 끊김)
-   - ✗ "PREsident • DONald • TRUMP •" (과도하게 많은 마커)
-   - ✗ "has • been • learning •" (약한 단어들 사이에 마커)
-   - ✓ "TRUMP • has been learning" (강세 후 약한 구절 전 마커만)
+   - ✓ "China's REAL ESTATE downTURN • is WORSening, • with S&P Global RATings forECasting • an 8% DROP • in 2024"
+   - ✗ "China's • REAL • ESTATE • downTURN • is • WORSening •" (과도한 마커)
+   - ✗ "is worsening • with S&P" (자연스러운 흐름을 방해하는 마커)
+   - ✓ "FORECASTING • an 8% DROP in 2024" (강세 후 호흡이 필요한 지점에만 마커)
 
 8. [originalText] 필드:
    - 반드시 fullTextBlocks와 동일한 JSON 배열 구조로 반환하세요.
@@ -371,26 +372,27 @@ ${text}
    - 하이픈(-)은 절대 사용하지 마세요. 단어를 음절 단위로 나누지 마세요.
    
    ⭐⭐⭐ 리듬 마커(•) 사용 규칙 (매우 중요 - 반드시 정확하게 적용):
-   - 리듬 마커는 영어 발화의 자연스러운 리듬을 표현하는 핵심 요소입니다.
-   - "최소한으로"는 불필요한 마커를 넣지 말라는 의미입니다. 필요한 곳에는 반드시 넣으세요.
-   - 강한 강세의 단어 바로 다음에, 다음 단어와의 연결이 명확히 끊어지는 경우에만 • 를 넣으세요.
-   - 약한 단어들 사이나 자연스럽게 연음되는 부분에는 절대 넣지 마세요.
+   - 리듬 마커는 원어민이 문장을 읽을 때 실제로 호흡을 쉬거나 일시정지하는 지점을 표현합니다.
+   - 마커는 의미 단위(chunk)의 끝에 위치하며, 문장의 자연스러운 흐름과 호흡을 반영합니다.
+   - 마커를 넣을 때: 사람이 자연스럽게 숨을 쉬거나 생각을 정리하기 위해 멈추는 지점
+   - 마커를 넣지 않을 때: 자연스럽게 계속 연음되거나 호흡이 필요 없는 부분
    
    ✓ 마커를 넣는 경우 (반드시):
-     * 강한 강세 단어 바로 다음 (예: "TRUMP •")
-     * 명확한 발음 끊김이 필요한 부분 (예: "DEAL •")
-     * 약한 단어 앞 강세 단어 이후 (예: "approved •")
+     * 의미 단위(주어-동사, 주요 정보)가 끝나고 새로운 정보가 시작되는 지점
+     * 강한 강세를 가진 단어 뒤에 약한 소리나 새로운 생각이 시작되는 지점
+     * 긴 문장에서 호흡이 필요한 구간 (예: "real estate downturn is worsening, • with S&P Global Ratings forecasting")
+     * 예시: "China's REAL ESTATE downTURN • is WORSening, • with S&P Global RATings forECasting • an 8% DROP •"
    
    ✗ 마커를 넣지 않는 경우 (절대 금지):
-     * 약한 단어들 사이 (예: "has been" - 마커 X)
-     * 자연스럽게 연음되는 부분 (예: "approved a" - 마커 X)
-     * 같은 강도의 약한 단어들 (예: "and the" - 마커 X)
+     * 약한 전치사나 관사 앞 (예: "is worsening with S&P" - with 앞에 마커 X)
+     * 자연스럽게 한 호흡으로 이어지는 부분 (예: "with S&P Global Ratings" - 내부에 마커 X)
+     * 단어 사이의 모든 위치에 마커를 넣는 과도한 표시
    
    구체적 예시:
-   - ✓ "PREsident DONald TRUMP • has apPROVED a DEAL •" (강세 뒤 명확한 끊김)
-   - ✗ "PREsident • DONald • TRUMP •" (과도하게 많은 마커)
-   - ✗ "has • been • learning •" (약한 단어들 사이에 마커)
-   - ✓ "TRUMP • has been learning" (강세 후 약한 구절 전 마커만)
+   - ✓ "China's REAL ESTATE downTURN • is WORSening, • with S&P Global RATings forECasting • an 8% DROP • in 2024"
+   - ✗ "China's • REAL • ESTATE • downTURN • is • WORSening •" (과도한 마커)
+   - ✗ "is worsening • with S&P" (자연스러운 흐름을 방해하는 마커)
+   - ✓ "FORECASTING • an 8% DROP in 2024" (강세 후 호흡이 필요한 지점에만 마커)
 
 4. [fullTextBlocks] 필드:
    - "source": "Direct Input"

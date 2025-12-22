@@ -92,7 +92,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
     return (
       <div className="space-y-4">
         {/* List of components */}
-        <ul className="space-y-3 text-[15px] text-slate-700">
+        <ul className="space-y-1.5 text-[15px] text-slate-700">
           {normalLines.map((line, i) => {
             const trimmed = line.trim();
             if (!trimmed) return null;
@@ -110,7 +110,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
                 {isSubItem && (
                   <span className="text-slate-300 shrink-0 select-none font-normal mt-0.5">◦</span>
                 )}
-                <div className="leading-relaxed text-slate-600">
+                <div className="text-slate-600">
                   {parseMarkdown(trimmed.replace(/^[*•-]\s*/, '').replace(/^\d+\.\s*/, ''))}
                 </div>
               </li>

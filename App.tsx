@@ -245,7 +245,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Section 2: Text Display */}
-        <div className="h-[600px] w-full" ref={analysisRef}>
+        <div className="h-full w-full" ref={analysisRef}>
           <TextDisplay
             ref={textDisplayRef}
             blocks={rhythmResult?.fullTextBlocks || []}

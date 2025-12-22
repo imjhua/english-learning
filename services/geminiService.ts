@@ -86,7 +86,7 @@ const promptText = `
    - "NEWS"
    - "LISTENING PRACTICE"
 3. 각주 번호나 기호(예: ¹, ², ³ 등)는 원문에서 제거해야 하며,
-   어떤 출력 결과에도 포함되어서는 안 됩니다.
+   어떤 출력 결과에도 포함되어서는 안 됩니다. 이때 각주를 다른 문자로 대체하지 마세요.
 4. 각 이미지마다 시각적으로 상단에 보이는 메인 제목이나 헤드라인
    (예: "Granddaughter's Ukulele Lessons")이 있다면 이를 추출하여
    "title" 필드에 포함하세요.
@@ -100,36 +100,47 @@ const promptText = `
      - "title": 메인 제목 또는 헤드라인 텍스트 (없을 경우 빈 문자열)
      - "paragraphs": 리듬 마커(•)가 포함된 문장 리스트로 이루어진 문단들의 리스트
    - 각 문장에 대해 리듬 분석을 적용하세요.
-   - 원어민 화자의 강세(강조)를 대문자로 표시하세요.
-   - 하이픈(-)은 절대 사용하지 마세요. 단어를 음절 단위로 나누지 마세요.
+   - 원어민 화자의 강세(강조)를 대문자로 표시하세요 (예: "REAL", "ESTATE", "downTURN").
+   
+   ⭐⭐⭐ 리듬 마커(•)의 정의 (매우 중요):
+   - 리듬 마커는 "한 호흡으로 이어지는 의미 단위"를 구분하는 표시입니다.
+   - 마커는 호흡 단위(breath group)의 경계에만 위치합니다.
+   - 같은 호흡 내의 단어들 사이에는 절대 마커를 넣을 수 없습니다.
+   - 단어 내부에는 절대 마커를 넣을 수 없습니다.
    
    ⭐⭐⭐ 리듬 마커(•) 사용 규칙 (매우 중요 - 반드시 정확하게 적용):
-   - 리듬 마커는 원어민이 문장을 읽을 때 실제로 호흡을 쉬거나 일시정지하는 지점을 표현합니다.
-   - 마커는 의미 단위(chunk)의 끝에 위치하며, 문장의 자연스러운 흐름과 호흡을 반영합니다.
-   - 마커를 넣을 때: 사람이 자연스럽게 숨을 쉬거나 생각을 정리하기 위해 멈추는 지점
-   - 마커를 넣지 않을 때: 자연스럽게 계속 연음되거나 호흡이 필요 없는 부분
+   - 한 호흡 단위 = 원어민이 한 번에 쉬지 않고 읽을 수 있는 의미 있는 구(phrase)
+   - 예: "President Donald Trump" (한 호흡), "has approved a deal" (다음 호흡)
+   - 두 호흡 사이의 경계에만 마커를 배치: "...Trump • has approved..."
+   - 호흡 단위 내의 단어들 사이에는 절대 마커를 넣을 수 없습니다.
    
-   ✓ 마커를 넣는 경우 (반드시):
-     * 의미 단위(주어-동사, 주요 정보)가 끝나고 새로운 정보가 시작되는 지점
-     * 강한 강세를 가진 단어 뒤에 약한 소리나 새로운 생각이 시작되는 지점
-     * 긴 문장에서 호흡이 필요한 구간 (예: "real estate downturn is worsening, • with S&P Global Ratings forecasting")
-     * 예시: "China's REAL ESTATE downTURN • is WORSening, • with S&P Global RATings forECasting • an 8% DROP •"
+   ✓ 올바른 마커 배치:
+     * 호흡 단위 경계에만 마커: "President Donald Trump • has approved a deal • allowing TikTok"
+     * 각 호흡 단위 내의 단어들은 연결: [President Donald Trump] • [has approved a deal] • [allowing TikTok]
+     * 예시: "my DAUGHter • has been LEARNing • the UKEleLE • in an AFter-school program • for SIX years NOW"
+       (호흡 단위: [my DAUGHter], [has been LEARNing], [the UKEleLE], [in an AFter-school program], [for SIX years NOW])
    
-   ✗ 마커를 넣지 않는 경우 (절대 금지):
-     * 약한 전치사나 관사 앞 (예: "is worsening with S&P" - with 앞에 마커 X)
-     * 자연스럽게 한 호흡으로 이어지는 부분 (예: "with S&P Global Ratings" - 내부에 마커 X)
-     * 단어 사이의 모든 위치에 마커를 넣는 과도한 표시
+   ✗ 절대 금지 (호흡 단위 내의 단어 사이에 마커):
+     * "President • Donald Trump" (한 호흡 내 마커 - 금지)
+     * "Donald • Trump" (한 호흡 내 마커 - 금지)
+     * "approved • a deal" (한 호흡 내 마커 - 금지)
+     * "RE•AL" (단어 내부 마커 - 금지)
+     * "down•TURN" (단어 내부 마커 - 금지)
+   
+   단어 강조 표시:
+   - 각 호흡 단위 내에서 원어민의 강세를 대문자로 표시합니다.
+   - 마커와 별개: 마커는 호흡 경계, 강조는 단어 내부의 음성 강세
+   - 예: "my DAUGHter has been LEARNing the UKEleLE" (마커 없음, 강조만 적용)
    
    구체적 예시:
-   - ✓ "China's REAL ESTATE downTURN • is WORSening, • with S&P Global RATings forECasting • an 8% DROP • in 2024"
-   - ✗ "China's • REAL • ESTATE • downTURN • is • WORSening •" (과도한 마커)
-   - ✗ "is worsening • with S&P" (자연스러운 흐름을 방해하는 마커)
-   - ✓ "FORECASTING • an 8% DROP in 2024" (강세 후 호흡이 필요한 지점에만 마커)
+   - ✓ "my DAUGHter • has been LEARNing • the UKEleLE • in an AFter-school program • for SIX years NOW"
+   - ✗ "my • DAUGHter • has • been • LEARNing • the • UKEleLE" (호흡 단위를 무시한 과도한 마커)
+   - ✗ "down•TURN" (단어 내부 마커 - 절대 금지)
 
 8. [originalText] 필드:
    - 반드시 fullTextBlocks와 동일한 JSON 배열 구조로 반환하세요.
    - 단, 각 블록의 텍스트(paragraphs)는 원본 이미지에서 추출된 텍스트를 사용하되,
-     각주 번호나 기호(예: ¹, ², ³ 등)는 제거해야 합니다.
+     각주 번호나 기호(예: ¹, ², ³ 등)는 제거해야 합니다. 이때 각주를 다른 문자로 대체하지 마세요.
    - 대소문자, 공백, 줄바꿈, 구두점을 포함한 모든 원본 서식을 유지하세요.
    - 리듬 마커(•), 대문자 변형, 강조 표시, 추가 기호를 절대 적용하지 마세요.
    - OCR로 추출된 텍스트에서 각주만 제거한 후 반환해야 합니다.
@@ -366,33 +377,32 @@ ${text}
 """
 
 1. 입력된 텍스트를 적절한 문장 단위로 분리하세요.
-2. 각주 번호나 기호(예: ¹, ², ³ 등)는 원문에서 제거해야 합니다.
+2. 각주 번호나 기호(예: ¹, ², ³ 등)는 원문에서 제거해야 합니다. 이때 각주를 다른 문자로 대체하지 마세요.
 3. 각 문장에 대해 리듬 분석을 적용하세요:
-   - 원어민 화자의 강세(강조)를 대문자로 표시하세요.
-   - 하이픈(-)은 절대 사용하지 마세요. 단어를 음절 단위로 나누지 마세요.
+   - 원어민 화자의 강세(강조)를 대문자로 표시하세요 (예: "REAL", "ESTATE", "downTURN").
+   
+   ⭐⭐⭐ 리듬 마커(•)의 정의 (매우 중요):
+   - 리듬 마커는 "한 호흡으로 이어지는 의미 단위"를 구분하는 표시입니다.
+   - 마커는 호흡 단위(breath group)의 경계에만 위치합니다.
+   - 같은 호흡 내의 단어들 사이에는 절대 마커를 넣을 수 없습니다.
+   - 단어 내부에는 절대 마커를 넣을 수 없습니다.
    
    ⭐⭐⭐ 리듬 마커(•) 사용 규칙 (매우 중요 - 반드시 정확하게 적용):
-   - 리듬 마커는 원어민이 문장을 읽을 때 실제로 호흡을 쉬거나 일시정지하는 지점을 표현합니다.
-   - 마커는 의미 단위(chunk)의 끝에 위치하며, 문장의 자연스러운 흐름과 호흡을 반영합니다.
-   - 마커를 넣을 때: 사람이 자연스럽게 숨을 쉬거나 생각을 정리하기 위해 멈추는 지점
-   - 마커를 넣지 않을 때: 자연스럽게 계속 연음되거나 호흡이 필요 없는 부분
+   - 한 호흡 단위 = 원어민이 한 번에 쉬지 않고 읽을 수 있는 의미 있는 구(phrase)
+   - 예: "President Donald Trump" (한 호흡), "has approved a deal" (다음 호흡)
+   - 두 호흡 사이의 경계에만 마커를 배치: "...Trump • has approved..."
+   - 호흡 단위 내의 단어들 사이에는 절대 마커를 넣을 수 없습니다.
    
-   ✓ 마커를 넣는 경우 (반드시):
-     * 의미 단위(주어-동사, 주요 정보)가 끝나고 새로운 정보가 시작되는 지점
-     * 강한 강세를 가진 단어 뒤에 약한 소리나 새로운 생각이 시작되는 지점
-     * 긴 문장에서 호흡이 필요한 구간 (예: "real estate downturn is worsening, • with S&P Global Ratings forecasting")
-     * 예시: "China's REAL ESTATE downTURN • is WORSening, • with S&P Global RATings forECasting • an 8% DROP •"
+   ✓ 올바른 마커 배치:
+     * 호흡 단위 경계에만 마커: "President Donald Trump • has approved a deal"
+     * 각 호흡 단위 내의 단어들은 연결: [President Donald Trump] • [has approved a deal]
+     * 예시: "my DAUGHter • has been LEARNing • the UKEleLE"
+       (호흡 단위: [my DAUGHter], [has been LEARNing], [the UKEleLE])
    
-   ✗ 마커를 넣지 않는 경우 (절대 금지):
-     * 약한 전치사나 관사 앞 (예: "is worsening with S&P" - with 앞에 마커 X)
-     * 자연스럽게 한 호흡으로 이어지는 부분 (예: "with S&P Global Ratings" - 내부에 마커 X)
-     * 단어 사이의 모든 위치에 마커를 넣는 과도한 표시
-   
-   구체적 예시:
-   - ✓ "China's REAL ESTATE downTURN • is WORSening, • with S&P Global RATings forECasting • an 8% DROP • in 2024"
-   - ✗ "China's • REAL • ESTATE • downTURN • is • WORSening •" (과도한 마커)
-   - ✗ "is worsening • with S&P" (자연스러운 흐름을 방해하는 마커)
-   - ✓ "FORECASTING • an 8% DROP in 2024" (강세 후 호흡이 필요한 지점에만 마커)
+   ✗ 절대 금지 (호흡 단위 내의 단어 사이에 마커):
+     * "President • Donald Trump" (한 호흡 내 마커 - 금지)
+     * "has • approved a deal" (한 호흡 내 마커 - 금지)
+     * "down•TURN" (단어 내부 마커 - 금지)
 
 4. [fullTextBlocks] 필드:
    - "source": "Direct Input"

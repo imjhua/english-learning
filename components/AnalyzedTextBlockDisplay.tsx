@@ -51,26 +51,33 @@ const renderRhythmText = (text: string) => {
     const chunks = part.text.split('•');
     return (
       <React.Fragment key={`nonverb-${pIdx}`}>
-        {chunks.map((chunk, cIdx) => (
-          <React.Fragment key={cIdx}>
-            {chunk.split(' ').map((word, wIdx) => {
-              if (!word) return null;
-              const upperCount = (word.match(/[A-Z]/g) || []).length;
-              const isStress = word.length > 1 && upperCount >= 2;
-              return (
-                <span
-                  key={`${cIdx}-${wIdx}`}
-                  className={`inline-block mx-[6px] ${isStress ? 'font-extrabold text-indigo-900 scale-105 origin-center' : 'text-slate-700'}`}
-                >
-                  {word}
-                </span>
-              );
-            })}
-            {cIdx < chunks.length - 1 && (
-              <span className="text-indigo-400 font-light select-none mx-[1px]">•</span>
-            )}
-          </React.Fragment>
-        ))}
+        {chunks.map((chunk, cIdx) => {
+          // Split by whitespace and filter out empty strings
+          const words = chunk.split(/\s+/).filter(Boolean);
+          
+          // Don't render if no words in this chunk
+          if (words.length === 0) return null;
+          
+          return (
+            <React.Fragment key={cIdx}>
+              {words.map((word, wIdx) => {
+                const upperCount = (word.match(/[A-Z]/g) || []).length;
+                const isStress = word.length > 1 && upperCount >= 2;
+                return (
+                  <span
+                    key={`${cIdx}-${wIdx}`}
+                    className={`inline-block mx-[6px] ${isStress ? 'font-extrabold text-indigo-900 scale-105 origin-center' : 'text-slate-700'}`}
+                  >
+                    {word}
+                  </span>
+                );
+              })}
+              {cIdx < chunks.length - 1 && (
+                <span className="text-indigo-400 font-light select-none mx-[1px]">•</span>
+              )}
+            </React.Fragment>
+          );
+        })}
       </React.Fragment>
     );
   });

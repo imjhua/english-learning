@@ -11,67 +11,140 @@ const cleanSentence = (text: string) => {
   return text.replace(/•/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 };
 
+// Helper to detect if a word has stress (2+ uppercase letters)
+const isStressedWord = (word: string): boolean => {
+  const upperCount = (word.match(/[A-Z]/g) || []).length;
+  return word.length > 1 && upperCount >= 2;
+};
+
+// Render a single word with optional stress styling
+const renderWord = (
+  word: string,
+  idx: number,
+  stressClassName: string,
+  normalClassName: string = ''
+) => {
+  const isStress = isStressedWord(word);
+  return (
+    <span
+      key={idx}
+      className={`inline-block mx-[2px] ${isStress ? stressClassName : normalClassName}`}
+    >
+      {word}
+    </span>
+  );
+};
+
+// Render words from text with stress detection
+const renderWordsWithStress = (
+  text: string,
+  stressClassName: string,
+  normalClassName: string = ''
+) => {
+  const words = text.split(/\s+/).filter(Boolean);
+  return words.map((word, idx) => renderWord(word, idx, stressClassName, normalClassName));
+};
+
+type ToInfType = 'adj' | 'nom' | 'adv';
+const toInfLabels: Record<ToInfType, string> = {
+  adj: '형용사',
+  nom: '명사',
+  adv: '부사',
+};
+const toInfTitles: Record<ToInfType, string> = {
+  adj: '형용사적용법',
+  nom: '명사적용법',
+  adv: '부사적용법',
+};
+
+// Render to-infinitive tag with label and stress
+const renderToInfTag = (
+  text: string,
+  type: ToInfType,
+  idx: number
+) => {
+  return (
+    <span
+      key={`toinf-${type}-${idx}`}
+      className="text-green-600 font-semibold mx-[4px] underline"
+      title={toInfTitles[type]}
+    >
+      {renderWordsWithStress(text, 'font-extrabold text-green-600 scale-105 origin-center')}
+      <span className="text-xs text-green-500">({toInfLabels[type]})</span>
+    </span>
+  );
+};
+
 const renderRhythmText = (text: string) => {
-  // Remove any unwanted characters that shouldn't be in the output (like underscores within words)
-  // This is a safety measure to catch AI errors
-  let cleanText = text.replace(/_/g, ''); // Remove underscores completely
-  
-  // Split by <VERB> tags to identify verbs
-  const verbRegex = /<VERB>(.*?)<\/VERB>/g;
-  const parts: Array<{ text: string; isVerb: boolean }> = [];
+  interface TextPart {
+    text: string;
+    type: 'normal' | 'verb' | 'toinf-adj' | 'toinf-nom' | 'toinf-adv';
+  }
+
+  const parts: TextPart[] = [];
+  const tagRegex = /<VERB>(.*?)<\/VERB>|<TOINF_ADJ>(.*?)<\/TOINF_ADJ>|<TOINF_NOM>(.*?)<\/TOINF_NOM>|<TOINF_ADV>(.*?)<\/TOINF_ADV>/g;
   let lastIndex = 0;
   let match;
-  
-  while ((match = verbRegex.exec(cleanText)) !== null) {
-    // Add text before verb
+
+  while ((match = tagRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      parts.push({ text: cleanText.slice(lastIndex, match.index), isVerb: false });
+      parts.push({ text: text.slice(lastIndex, match.index), type: 'normal' });
     }
-    // Add verb
-    parts.push({ text: match[1], isVerb: true });
+
+    if (match[1] !== undefined) {
+      parts.push({ text: match[1], type: 'verb' });
+    } else if (match[2] !== undefined) {
+      parts.push({ text: match[2], type: 'toinf-adj' });
+    } else if (match[3] !== undefined) {
+      parts.push({ text: match[3], type: 'toinf-nom' });
+    } else if (match[4] !== undefined) {
+      parts.push({ text: match[4], type: 'toinf-adv' });
+    }
+
     lastIndex = match.index + match[0].length;
   }
-  
-  // Add remaining text
-  if (lastIndex < cleanText.length) {
-    parts.push({ text: cleanText.slice(lastIndex), isVerb: false });
+
+  if (lastIndex < text.length) {
+    parts.push({ text: text.slice(lastIndex), type: 'normal' });
   }
-  
-  // Render parts, splitting non-verb parts by breath markers
+
   return parts.map((part, pIdx) => {
-    if (part.isVerb) {
+    if (part.type === 'verb') {
       return (
-        <span key={`verb-${pIdx}`} className="text-red-600 font-semibold mx-[6px]">
+        <span key={`verb-${pIdx}`} className="text-red-600 font-semibold mx-[4px]">
           {part.text}
         </span>
       );
     }
-    
-    // For non-verb text, split by bullet markers
+
+    if (part.type === 'toinf-adj') {
+      return renderToInfTag(part.text, 'adj', pIdx);
+    }
+    if (part.type === 'toinf-nom') {
+      return renderToInfTag(part.text, 'nom', pIdx);
+    }
+    if (part.type === 'toinf-adv') {
+      return renderToInfTag(part.text, 'adv', pIdx);
+    }
+
+    // Normal text with breath markers
     const chunks = part.text.split('•');
     return (
-      <React.Fragment key={`nonverb-${pIdx}`}>
+      <React.Fragment key={`normal-${pIdx}`}>
         {chunks.map((chunk, cIdx) => {
-          // Split by whitespace and filter out empty strings
           const words = chunk.split(/\s+/).filter(Boolean);
-          
-          // Don't render if no words in this chunk
           if (words.length === 0) return null;
-          
+
           return (
             <React.Fragment key={cIdx}>
-              {words.map((word, wIdx) => {
-                const upperCount = (word.match(/[A-Z]/g) || []).length;
-                const isStress = word.length > 1 && upperCount >= 2;
-                return (
-                  <span
-                    key={`${cIdx}-${wIdx}`}
-                    className={`inline-block mx-[6px] ${isStress ? 'font-extrabold text-indigo-900 scale-105 origin-center' : 'text-slate-700'}`}
-                  >
-                    {word}
-                  </span>
-                );
-              })}
+              {words.map((word, wIdx) =>
+                renderWord(
+                  word,
+                  wIdx,
+                  'font-extrabold text-indigo-900 scale-105 origin-center',
+                  'text-slate-700'
+                )
+              )}
               {cIdx < chunks.length - 1 && (
                 <span className="text-indigo-400 font-light select-none mx-[1px]">•</span>
               )}
@@ -83,7 +156,11 @@ const renderRhythmText = (text: string) => {
   });
 };
 
-const AnalyzedTextBlockDisplay: React.FC<AnalyzedTextBlockDisplayProps> = ({ blocks, isAnalzying, onSentenceClick }) => {
+const AnalyzedTextBlockDisplay: React.FC<AnalyzedTextBlockDisplayProps> = ({
+  blocks,
+  isAnalzying,
+  onSentenceClick,
+}) => {
   return (
     <>
       {blocks.map((block, bIdx) => (
@@ -94,17 +171,24 @@ const AnalyzedTextBlockDisplay: React.FC<AnalyzedTextBlockDisplayProps> = ({ blo
             </span>
           </div>
           {block.title && block.title.trim() !== '' && (
-            <div className="font-bold text-lg sm:text-xl text-slate-800 mb-1 sm:mb-2">{block.title}</div>
+            <div className="font-bold text-lg sm:text-xl text-slate-800 mb-1 sm:mb-2">
+              {block.title}
+            </div>
           )}
           <div className="space-y-3 sm:space-y-6">
             {block.paragraphs.map((paragraph, pIdx) => (
-              <div key={pIdx} className="text-slate-700 leading-7 sm:leading-8 text-sm sm:text-[17px]">
+              <div
+                key={pIdx}
+                className="text-slate-700 leading-7 sm:leading-8 text-sm sm:text-[17px]"
+              >
                 {paragraph.map((sentence, sIdx) => (
                   <span
                     key={sIdx}
                     role="button"
                     tabIndex={0}
-                    onClick={() => !isAnalzying && onSentenceClick(cleanSentence(sentence))}
+                    onClick={() =>
+                      !isAnalzying && onSentenceClick(cleanSentence(sentence))
+                    }
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();

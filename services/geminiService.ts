@@ -109,6 +109,18 @@ const promptText = `
    - 예: "President Donald Trump <VERB>has approved</VERB> a deal" (구 동사도 함께 마킹)
    - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB>HAS</VERB>" 또는 "<VERB>apPROVED</VERB>"
    
+   ⭐⭐⭐ To부정사 용법 표시 (매우 중요):
+   - To부정사가 나타나면 반드시 다음 정확한 태그 형식을 사용하세요:
+     * 형용사적용법: <TOINF_ADJ>to infinitive</TOINF_ADJ>
+     * 명사적용법: <TOINF_NOM>to infinitive</TOINF_NOM>
+     * 부사적용법: <TOINF_ADV>to infinitive</TOINF_ADV>
+   - 중요: 태그 이름에 반드시 언더스코어(_)를 포함하세요. (TOINF_ADJ, TOINF_NOM, TOINF_ADV)
+   - 중요: To부정사 내부에서도 강세(대문자)를 그대로 유지하세요.
+   - 예: "I <VERB>have</VERB> a book <TOINF_ADJ>to READ</TOINF_ADJ>" (형용사적, READ에 강세)
+   - 예: "I <VERB>want</VERB> <TOINF_NOM>to LEARN</TOINF_NOM>" (명사적, LEARN에 강세)
+   - 예: "She <VERB>studied</VERB> hard <TOINF_ADV>to PASS the exam</TOINF_ADV>" (부사적, PASS에 강세)
+   - 예: "<TOINF_ADJ>to READ</TOINF_ADJ>", "<TOINF_ADV>to rePAIR</TOINF_ADV>" (내부 강세 보존)
+   
    ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
    - 조동사(have, be, do, will, can 등) + 주동사의 조합은 "하나의 호흡 단위"입니다.
    - 예: "<VERB>has been learning</VERB>" → [호흡 단위] (내부 마커 절대 금지)
@@ -117,8 +129,6 @@ const promptText = `
    - 동사 구 내부의 조동사-동사 사이에는 절대 마커를 넣으면 안 됩니다.
    - 동사 구 뒤의 목적어와의 경계에만 마커를 넣을 수 있습니다.
    - 예: "she <VERB>has been learning</VERB> • the piano" (동사 구 내부 마커 X, 뒤 마커 O)
-   
-   ⭐⭐⭐ 리듬 마커(•)의 정의 및 위치 규칙 (매우 중요 - 이것이 핵심):
    
    【호흡 단위의 정의】
    - 한 호흡 단위 = 원어민이 쉬지 않고 한 번에 읽을 수 있는 의미 있는 구(phrase)
@@ -464,6 +474,18 @@ ${text}
    - 예: "<VERB>has</VERB> been <VERB>learning</VERB>" (두 동사 모두 마킹)
    - 예: "President Donald Trump <VERB>has approved</VERB> a deal" (구 동사도 함께 마킹)
    - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB>HAS</VERB>" 또는 "<VERB>apPROVED</VERB>"
+   
+   ⭐⭐⭐ To부정사 용법 표시 (매우 중요):
+   - To부정사가 나타나면 반드시 다음 정확한 태그 형식을 사용하세요:
+     * 형용사적용법: <TOINF_ADJ>to infinitive</TOINF_ADJ>
+     * 명사적용법: <TOINF_NOM>to infinitive</TOINF_NOM>
+     * 부사적용법: <TOINF_ADV>to infinitive</TOINF_ADV>
+   - 중요: 태그 이름에 반드시 언더스코어(_)를 포함하세요. (TOINF_ADJ, TOINF_NOM, TOINF_ADV)
+   - 중요: To부정사 내부에서도 강세(대문자)를 그대로 유지하세요.
+   - 예: "I <VERB>have</VERB> a book <TOINF_ADJ>to READ</TOINF_ADJ>" (형용사적, READ에 강세)
+   - 예: "I <VERB>want</VERB> <TOINF_NOM>to LEARN</TOINF_NOM>" (명사적, LEARN에 강세)
+   - 예: "She <VERB>studied</VERB> hard <TOINF_ADV>to PASS the exam</TOINF_ADV>" (부사적, PASS에 강세)
+   - 예: "<TOINF_ADJ>to READ</TOINF_ADJ>", "<TOINF_ADV>to rePAIR</TOINF_ADV>" (내부 강세 보존)
    
    ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
    - 조동사(have, be, do, will, can 등) + 주동사의 조합은 "하나의 호흡 단위"입니다.

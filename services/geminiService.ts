@@ -102,39 +102,100 @@ const promptText = `
    - 각 문장에 대해 리듬 분석을 적용하세요.
    - 원어민 화자의 강세(강조)를 대문자로 표시하세요 (예: "REAL", "ESTATE", "downTURN").
    
-   ⭐⭐⭐ 리듬 마커(•)의 정의 (매우 중요):
-   - 리듬 마커는 "한 호흡으로 이어지는 의미 단위"를 구분하는 표시입니다.
-   - 마커는 호흡 단위(breath group)의 경계에만 위치합니다.
-   - 같은 호흡 내의 단어들 사이에는 절대 마커를 넣을 수 없습니다.
-   - 단어 내부에는 절대 마커를 넣을 수 없습니다.
+   ⭐⭐⭐ 동사 표시 (매우 중요):
+   - 문장 내 모든 동사를 <VERB>동사</VERB> 형식으로 감싸세요.
+   - 동사는 주동사와 조동사, 보조동사 모두 포함합니다. 동명사나 분사는 제외합니다.
+   - 예: "<VERB>has</VERB> been <VERB>learning</VERB>" (두 동사 모두 마킹)
+   - 예: "President Donald Trump <VERB>has approved</VERB> a deal" (구 동사도 함께 마킹)
+   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB>HAS</VERB>" 또는 "<VERB>apPROVED</VERB>"
+   
+   ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
+   - 조동사(have, be, do, will, can 등) + 주동사의 조합은 "하나의 호흡 단위"입니다.
+   - 예: "<VERB>has been learning</VERB>" → [호흡 단위] (내부 마커 절대 금지)
+   - 예: "<VERB>will continue</VERB>" → [호흡 단위] (내부 마커 절대 금지)
+   - 예: "<VERB>is going</VERB>" → [호흡 단위] (내부 마커 절대 금지)
+   - 동사 구 내부의 조동사-동사 사이에는 절대 마커를 넣으면 안 됩니다.
+   - 동사 구 뒤의 목적어와의 경계에만 마커를 넣을 수 있습니다.
+   - 예: "she <VERB>has been learning</VERB> • the piano" (동사 구 내부 마커 X, 뒤 마커 O)
+   
+   ⭐⭐⭐ 리듬 마커(•)의 정의 및 위치 규칙 (매우 중요 - 이것이 핵심):
+   
+   【호흡 단위의 정의】
+   - 한 호흡 단위 = 원어민이 쉬지 않고 한 번에 읽는 의미 있는 단어 그룹
+   - 예: "President Donald Trump" (3개 단어가 하나의 호흡)
+   - 예: "has been learning" (3개 단어가 하나의 호흡)
+   - 호흡 단위 내의 모든 단어는 일반 공백(space)으로만 분리됨 → 마커 없음
+   
+   【마커가 올 수 있는 유일한 위치】
+   - 두 개의 서로 다른 호흡 단위 사이의 경계에만 마커(•)가 옴
+   - 마커는 호흡 경계의 공백을 대체함
+   - 예: "[호흡1: President Donald Trump] • [호흡2: has been learning] • [호흡3: the piano]"
+   - 호흡 단위 내부의 어떤 공백도 마커로 바뀌면 안 됨
+   
+   【절대 금지 - 같은 호흡 내 단어들 사이에 마커 금지】
+   - "CHI • na's" X (중국이 한 호흡인데 마커 있음 - 금지)
+   - "President • Donald • Trump" X (같은 호흡이면 공백만 - 금지)
+   - "has • been • learning" X (동사 구는 한 호흡 - 금지)
+   - "word1 • word2" X (같은 호흡이면 공백만 - 금지)
+   - "a • cat" X (같은 호흡이면 공백만 - 금지)
+   
+   【단어 내부 절대 금지】
+   - "criti•cal" X, "cau_tious" X, "learn-ing" X, "CHI•na" X
+   - 단어는 공백으로만 구분되며, 내부에 어떤 기호도 불가
+   
+   【올바른 형식】
+   - 같은 호흡 단위 내: word1 word2 word3 (공백만 사용)
+   - 호흡 경계에만: word3 • word4 (마커는 호흡 사이에만)
+   
+   【원문의 공백 구조를 절대 변경하지 말 것 - 이것이 China's 문제의 핵심】
+   - 원문에 공백이 없으면 공백을 절대 추가해서 안 됩니다
+   - "China's" (원문: 공백 없음) → 올바름: "CHIna's" (공백 없음)
+   - "China's" → 틀림: "CHI • na's" (공백 추가하고 마커 삽입)
+   - "it's", "they're", "don't" 같은 축약형은 절대 공백 삽입 금지
+   - "mother-in-law", "well-known" 같은 하이픈 단어는 한 호흡
+   - 원문의 공백 위치만 마커 배치 고려 대상
+   - 예: "New York" (원문: 공백 있음) → 호흡 경계면 "New • York" O
+   - 예: "China's" (원문: 공백 없음) → "CHIna's" (공백 추가 금지)
+   
    
    ⭐⭐⭐ 리듬 마커(•) 사용 규칙 (매우 중요 - 반드시 정확하게 적용):
    - 한 호흡 단위 = 원어민이 한 번에 쉬지 않고 읽을 수 있는 의미 있는 구(phrase)
-   - 예: "President Donald Trump" (한 호흡), "has approved a deal" (다음 호흡)
-   - 두 호흡 사이의 경계에만 마커를 배치: "...Trump • has approved..."
-   - 호흡 단위 내의 단어들 사이에는 절대 마커를 넣을 수 없습니다.
+   - 호흡 단위 내의 단어들은 일반 공백(space)으로 분리됨 (마커 없음)
+   - 마커(•)는 두 호흡 단위 사이의 경계에만 옴
    
-   ✓ 올바른 마커 배치:
-     * 호흡 단위 경계에만 마커: "President Donald Trump • has approved a deal • allowing TikTok"
-     * 각 호흡 단위 내의 단어들은 연결: [President Donald Trump] • [has approved a deal] • [allowing TikTok]
-     * 예시: "my DAUGHter • has been LEARNing • the UKEleLE • in an AFter-school program • for SIX years NOW"
-       (호흡 단위: [my DAUGHter], [has been LEARNing], [the UKEleLE], [in an AFter-school program], [for SIX years NOW])
+   【마커 배치의 핵심 - 원문의 공백 구조 존중】
+   - 마커는 원문에 있는 공백 위치에만 배치됨
+   - 마커는 호흡이 끝나고 다음 호흡이 시작되는 "원문의 공백"을 대체함
+   - 호흡 단위 내부의 공백은 일반 공백으로 남음
+   - 예: [호흡1: word1 word2] • [호흡2: word3 word4]
+   - 호흡1 내: word1과 word2는 일반 공백으로만 분리
+   - 호흡 경계: 호흡1의 word2와 호흡2의 word3 사이에만 마커(•)
+   - ⚠️ 원문에 공백이 없으면 절대 공백을 만들어내면 안 됨
+   - "China's" 원문에 공백 없음 → "CHIna's" (공백 추가 금지)
    
-   ✗ 절대 금지 (호흡 단위 내의 단어 사이에 마커):
-     * "President • Donald Trump" (한 호흡 내 마커 - 금지)
-     * "Donald • Trump" (한 호흡 내 마커 - 금지)
-     * "approved • a deal" (한 호흡 내 마커 - 금지)
-     * "RE•AL" (단어 내부 마커 - 금지)
-     * "down•TURN" (단어 내부 마커 - 금지)
+   【틀리기 쉬운 사례 - 절대 금지】
+   - "CHI • na's" X (한 호흡인데 마커 삽입됨 - 틀림)
+   - "has • been" X (동사 구는 한 호흡인데 마커 삽입됨 - 틀림)
+   - "word1 • word2" X (같은 호흡이면 공백만 - 틀림)
+   - "President • Donald Trump" X (같은 호흡이면 마커 불가 - 틀림)
+   
+   【올바른 사례】
+   - "President Donald Trump • has been learning • the piano"
+     → [호흡1: President Donald Trump] • [호흡2: has been learning] • [호흡3: the piano]
+   - "my DAUGHter • <VERB>has been LEARNing</VERB> • the UKEleLE"
+     → [호흡1: my DAUGHter] • [호흡2: has been learning] • [호흡3: the UKEleLE]
+   - China's (한 호흡이면): "CHI • na's" X (틀림), "CHI na's" O (올바름)
+   - 영어는 공백 기준으로 한 호흡을 구성하므로, 공백이 있으면 그 공백 위치에만 마커를 고려해야 합니다.
    
    단어 강조 표시:
    - 각 호흡 단위 내에서 원어민의 강세를 대문자로 표시합니다.
    - 마커와 별개: 마커는 호흡 경계, 강조는 단어 내부의 음성 강세
-   - 예: "my DAUGHter has been LEARNing the UKEleLE" (마커 없음, 강조만 적용)
+   - 예: "my DAUGHter <VERB>has been LEARNing</VERB> the UKEleLE" (마커 없음, 강조만 적용)
    
    구체적 예시:
-   - ✓ "my DAUGHter • has been LEARNing • the UKEleLE • in an AFter-school program • for SIX years NOW"
-   - ✗ "my • DAUGHter • has • been • LEARNing • the • UKEleLE" (호흡 단위를 무시한 과도한 마커)
+   - ✓ "my DAUGHter • <VERB>has been LEARNing</VERB> • the UKEleLE • in an AFter-school program • for SIX years NOW"
+   - ✗ "my • DAUGHter • <VERB>has</VERB> • <VERB>been</VERB> • LEARNing • the • UKEleLE" (호흡 단위를 무시한 과도한 마커)
+   - ✗ "<VERB>has • been</VERB> learning" (동사 구 내부 마커 - 절대 금지)
    - ✗ "down•TURN" (단어 내부 마커 - 절대 금지)
 
 8. [originalText] 필드:
@@ -168,7 +229,7 @@ const promptText = `
          "title": "TikTok Deal",
          "paragraphs": [
            [
-             "PREsident DONald TRUMP • has apPROVED a DEAL alLOWing TikTok • to conTINue OPerating in the uNIted STATES • under a NEW joint VENture STRUCture."
+             "PREsident DONald TRUMP • <VERB>has apPROVED</VERB> a DEAL alLOWing TikTok • <VERB>to conTINue</VERB> OPerating in the uNIted STATES • under a NEW joint VENture STRUCture."
            ]
          ]
        }
@@ -381,28 +442,83 @@ ${text}
 3. 각 문장에 대해 리듬 분석을 적용하세요:
    - 원어민 화자의 강세(강조)를 대문자로 표시하세요 (예: "REAL", "ESTATE", "downTURN").
    
+   ⭐⭐⭐ 동사 표시 (매우 중요):
+   - 문장 내 모든 동사를 <VERB>동사</VERB> 형식으로 감싸세요.
+   - 동사는 주동사와 조동사, 보조동사 모두 포함합니다. 동명사나 분사는 제외합니다.
+   - 예: "<VERB>has</VERB> been <VERB>learning</VERB>" (두 동사 모두 마킹)
+   - 예: "President Donald Trump <VERB>has approved</VERB> a deal" (구 동사도 함께 마킹)
+   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB>HAS</VERB>" 또는 "<VERB>apPROVED</VERB>"
+   
+   ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
+   - 조동사(have, be, do, will, can 등) + 주동사의 조합은 "하나의 호흡 단위"입니다.
+   - 예: "<VERB>has been learning</VERB>" → [호흡 단위] (내부 마커 절대 금지)
+   - 예: "<VERB>will continue</VERB>" → [호흡 단위] (내부 마커 절대 금지)
+   - 동사 구 내부의 조동사-동사 사이에는 절대 마커를 넣으면 안 됩니다.
+   
    ⭐⭐⭐ 리듬 마커(•)의 정의 (매우 중요):
    - 리듬 마커는 "한 호흡으로 이어지는 의미 단위"를 구분하는 표시입니다.
-   - 마커는 호흡 단위(breath group)의 경계에만 위치합니다.
-   - 같은 호흡 내의 단어들 사이에는 절대 마커를 넣을 수 없습니다.
-   - 단어 내부에는 절대 마커를 넣을 수 없습니다.
+   - 마커는 호흡 단위(breath group)의 경계에만, 그리고 오직 하나만 위치합니다.
+   - 마커는 두 호흡 단위 사이의 공백을 대체합니다 (호흡 단위 경계의 공백 위치에만).
+   - "한 단어" = 공백으로만 구분되는 최소 단위 (예: "learning", "has", "been", "cautious", "critical")
+   - "단어 내부"에는 절대 어떤 기호도 들어갈 수 없습니다 (마커(•), 언더스코어(_), 하이픈(-), 기타 기호 금지).
+     * 예: "criti•cal" X, "cau_tious" X, "learn-ing" X, "CRI•ti•cal" X, "CAU_tious" X
+   - "같은 호흡 단위 내의 단어들 사이의 공백"에도 절대 어떤 기호도 들어갈 수 없습니다.
+     * 예: "President • Donald Trump" X (같은 호흡 내 단어 사이 - 금지)
+     * 예: "CHI • na's" X (같은 호흡이면 공백만 - 금지)
+     * 예: "word1 • word2 • word3" X (같은 호흡이면 모두 공백 없음)
+   - 마커는 "호흡 단위의 마지막 단어"와 "다음 호흡 단위의 첫 단어" 사이의 공백에만 올 수 있습니다.
+     * 마커가 올 수 있는 유일한 위치: 두 호흡 경계의 공백만
+     * 예: "[호흡1] • [호흡2]" (호흡과 호흡 사이에만)
+   
+   【원문의 공백 구조를 절대 변경하지 말 것 - 이것이 China's 문제의 핵심】
+   - 원문에 공백이 없으면 공백을 절대 추가해서 안 됩니다
+   - "China's" (원문: 공백 없음) → 올바름: "CHIna's" (공백 없음)
+   - "China's" → 틀림: "CHI • na's" (공백 추가하고 마커 삽입)
+   - "it's", "they're", "don't" 같은 축약형은 절대 공백 삽입 금지
+   - "mother-in-law", "well-known" 같은 하이픈 단어는 한 호흡
+   - 원문의 공백 위치만 마커 배치 고려 대상
+   
    
    ⭐⭐⭐ 리듬 마커(•) 사용 규칙 (매우 중요 - 반드시 정확하게 적용):
    - 한 호흡 단위 = 원어민이 한 번에 쉬지 않고 읽을 수 있는 의미 있는 구(phrase)
-   - 예: "President Donald Trump" (한 호흡), "has approved a deal" (다음 호흡)
-   - 두 호흡 사이의 경계에만 마커를 배치: "...Trump • has approved..."
-   - 호흡 단위 내의 단어들 사이에는 절대 마커를 넣을 수 없습니다.
+   - 예: "President Donald Trump" (한 호흡), "<VERB>has approved</VERB> a deal" (다음 호흡)
+   - 두 호흡 사이의 경계에만 마커를 배치: "...Trump • <VERB>has approved</VERB> a deal..."
+   - 호흡 단위 내의 모든 단어들 사이에는 절대 마커를 넣을 수 없습니다.
+   - 원문의 공백 구조를 변경하면 안 됩니다 (China's → CHIna's, 공백 추가 금지)
    
    ✓ 올바른 마커 배치:
-     * 호흡 단위 경계에만 마커: "President Donald Trump • has approved a deal"
-     * 각 호흡 단위 내의 단어들은 연결: [President Donald Trump] • [has approved a deal]
-     * 예시: "my DAUGHter • has been LEARNing • the UKEleLE"
-       (호흡 단위: [my DAUGHter], [has been LEARNing], [the UKEleLE])
+     * 호흡 단위 경계에만 마커: "President Donald Trump • <VERB>has approved</VERB> a deal"
+     * 각 호흡 단위 내의 단어들은 공백으로 연결: [President Donald Trump] • [<VERB>has approved</VERB> a deal]
+     * 예시: "my DAUGHter • <VERB>has been LEARNing</VERB> • the UKEleLE"
+       (호흡 단위: [my DAUGHter], [<VERB>has been LEARNing</VERB>], [the UKEleLE])
    
-   ✗ 절대 금지 (호흡 단위 내의 단어 사이에 마커):
+   ✗ 절대 금지 (어떤 기호도 호흡 단위 내부나 단어 내부에):
      * "President • Donald Trump" (한 호흡 내 마커 - 금지)
+     * "CHI • na's" (원문에 공백이 없으므로 틀림 - China's → CHIna's)
+     * "President_Donald Trump" (한 호흡 내 언더스코어 - 금지)
+     * "<VERB>has</VERB> • <VERB>been</VERB> learning" (동사 구 내부 마커 - 금지)
      * "has • approved a deal" (한 호흡 내 마커 - 금지)
      * "down•TURN" (단어 내부 마커 - 금지)
+     * "cau_tious" (단어 내부 언더스코어 - 금지)
+   
+   【마커와 공백의 관계 - 원문을 기준으로】
+   - 호흡 단위 내부의 단어들 사이의 공백: 일반 공백 (마커 없음)
+   - 호흡 경계의 공백: 마커(•)로 대체 (원문에 공백이 있는 경우만)
+   - 원문에 공백이 없으면 절대 공백을 만들어내면 안 됨
+   - 예: "word1 word2 • word3 word4"
+     → word1과 word2 사이: 일반 공백
+     → word2와 word3 사이: 마커 (호흡 경계)
+     → word3과 word4 사이: 일반 공백
+   - 예: "China's" (원문: 공백 없음) → "CHIna's" (공백 추가 금지)
+   
+   ⚠️ 단어 내부에 절대 어떤 문자도 삽입하지 말 것 (매우 중요 - 검증):
+   - 언더스코어(_), 마커(•), 하이픈(-), 마침표(.) 등 어떤 문자도 단어 중간에 삽입 금지
+   - "critical" → "CRI_tical" X, "critical" → "CRI•tical" X
+   - "cautious" → "cau_tious" X, "cautious" → "cau•tious" X  
+   - "learning" → "learn_ing" X, "learning" → "learn•ing" X
+   - 단어는 공백으로만 구분되며, 내부에 어떤 기호도 삽입되면 안 됩니다.
+   - 마커(•)는 오직 두 호흡 단위 경계의 공백에만 올 수 있습니다.
+   - 예: "critical thinking" → "CRItical • THINKing" (마커는 호흡 경계에만)
 
 4. [fullTextBlocks] 필드:
    - "source": "Direct Input"

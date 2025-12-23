@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SentenceAnalysisResult } from '../types';
 import { X, BookOpen, GitBranch, Network, RefreshCw } from 'lucide-react';
 
@@ -12,6 +12,19 @@ interface AnalysisModalProps {
 }
 
 const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoading, data, onRetry }) => {
+  // 모달이 열려있을 때 배경 스크롤 잠금
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   // Helper to render sentence with bold verbs
@@ -139,14 +152,15 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
             Structure Analysis
           </h3>
           <div className="flex items-center gap-1">
-            <button
-              onClick={onRetry}
-              disabled={isLoading}
-              className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 disabled:opacity-50"
-              title="Re-analyze this sentence"
-            >
-              <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
-            </button>
+            {!isLoading && (
+              <button
+                onClick={onRetry}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
+                title="Re-analyze this sentence"
+              >
+                <RefreshCw size={18} />
+              </button>
+            )}
             <button
               onClick={onClose}
               className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"

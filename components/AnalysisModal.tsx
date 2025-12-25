@@ -31,8 +31,11 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
   const renderHighlightedSentence = (sentence: string, mainVerb: string, otherVerbs: string[]) => {
     if (!sentence) return sentence;
 
+    // Remove all XML tags (<VERB>, </VERB>, <TOINF_ADJ>, etc.)
+    const cleanedSentence = sentence.replace(/<\/?[A-Z_]+>/g, '');
+
     // 원본 대소문자 그대로 사용
-    const words = sentence.split(' ');
+    const words = cleanedSentence.split(' ');
 
     // Prepare verb matching sets (lowercase)
     const mainVerbTokens = mainVerb ? mainVerb.toLowerCase().split(' ') : [];

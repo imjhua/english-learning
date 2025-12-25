@@ -76,7 +76,7 @@ const TextInput: React.FC<TextInputProps> = ({
               disabled={isProcessing || !inputText.trim()}
               className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isProcessing ? 'Analyzing...' : 'Submit Text'}
+              Submit Text
             </button>
             <button
               onClick={handleClear}

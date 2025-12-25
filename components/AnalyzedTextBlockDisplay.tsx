@@ -28,7 +28,7 @@ const renderWord = (
   return (
     <span
       key={idx}
-      className={`inline-block mx-[2px] ${isStress ? stressClassName : normalClassName}`}
+      className={`inline-block mx-[4px] ${isStress ? stressClassName : normalClassName}`}
     >
       {word}
     </span>

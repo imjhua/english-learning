@@ -201,16 +201,6 @@ const AnalyzedTextBlockDisplay: React.FC<AnalyzedTextBlockDisplayProps> = ({
                 key={pIdx}
                 className="text-slate-700 leading-7 sm:leading-8 text-sm sm:text-[17px]"
               >
-                {/* 문장 형식 배지 - 각 문단 상단에 표시 */}
-                {block.forms && block.forms[pIdx] && (
-                  <div className="mb-2 inline-block">
-                    <span className="inline-block bg-gradient-to-r from-purple-100 to-purple-50 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full border border-purple-200">
-                      {block.forms[pIdx]}
-                    </span>
-                  </div>
-                )}
-                {block.forms && block.forms[pIdx] && <div className="mb-2" />}
-                
                 {paragraph.map((sentence, sIdx) => (
                   <span
                     key={sIdx}

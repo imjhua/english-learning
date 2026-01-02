@@ -129,13 +129,12 @@ const promptText = `
    - 원어민 화자의 강세(강조)를 대문자로 표시하세요 (예: "REAL", "ESTATE", "downTURN").
    
    ⭐⭐⭐ 동사 표시 (매우 중요):
-   - 문장 내 모든 동사를 <VERB_형식>동사</VERB_형식> 형식으로 감싸세요.
-   - 형식은 그 동사가 속한 문장(또는 절)의 형식을 나타냅니다: <VERB_1형>, <VERB_2형>, <VERB_3형>, <VERB_4형>, <VERB_5형>
-   - 복합 문장에서는 주절의 주동사는 주절의 형식을 사용하고, 종속절이나 보조 동사는 그들이 기능하는 문맥의 형식을 사용하세요.
-   - 동사는 주동사와 조동사, 보조동사 모두 포함합니다. 동명사나 분사는 제외합니다.
-   - 예: "<VERB_3형>has</VERB_3형> been <VERB_3형>learning</VERB_3형>" (두 동사 모두 마킹, 3형식)
-   - 예: "President Donald Trump <VERB_3형>has approved</VERB_3형> a deal" (구 동사도 함께 마킹)
-   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB_3형>HAS</VERB_3형>" 또는 "<VERB_3형>apPROVED</VERB_3형>"
+   - 문장의 **메인 동사(주절의 주동사)만** <VERB_형식>동사</VERB_형식> 형식으로 감싸세요.
+   - 형식은 그 메인 동사가 속한 문장의 형식을 나타냅니다: <VERB_1형>, <VERB_2형>, <VERB_3형>, <VERB_4형>, <VERB_5형>
+   - **절대 금지**: 보조 동사(have, be, do 등), 부정사, 분사, 종속절의 동사는 태그를 붙이면 안 됩니다.
+   - 예: "she <VERB_3형>has approved</VERB_3형> the plan <TOINF_NOM>to START</TOINF_NOM>" (메인 동사 "approved"만 마킹, "has"는 마킹 X, "START"는 부정사라 마킹 X)
+   - 예: "I <VERB_3형>saw</VERB_3형> him <TOINF_NOM>steal</TOINF_NOM> the money" (메인 동사 "saw"만 마킹, "steal"은 부정사)
+   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB_3형>HAS APPROVED</VERB_3형>"
    
    ⭐⭐⭐ To부정사 용법 표시 (매우 중요):
    - To부정사가 나타나면 반드시 다음 정확한 태그 형식을 사용하세요:
@@ -144,13 +143,15 @@ const promptText = `
      * 부사적용법: <TOINF_ADV>to infinitive</TOINF_ADV>
    - 중요: 태그 이름에 반드시 언더스코어(_)를 포함하세요. (TOINF_ADJ, TOINF_NOM, TOINF_ADV)
    - 중요: To부정사 내부에서도 강세(대문자)를 그대로 유지하세요.
-   - 예: "I <VERB_3형>have</VERB_3형> a book <TOINF_ADJ>to READ</TOINF_ADJ>" (형용사적, READ에 강세)
    - 예: "I <VERB_3형>want</VERB_3형> <TOINF_NOM>to LEARN</TOINF_NOM>" (명사적, LEARN에 강세)
    - 예: "She <VERB_3형>studied</VERB_3형> hard <TOINF_ADV>to PASS the exam</TOINF_ADV>" (부사적, PASS에 강세)
-   - 예: "<TOINF_ADJ>to READ</TOINF_ADJ>", "<TOINF_ADV>to rePAIR</TOINF_ADV>" (내부 강세 보존)
+   - 예: "<TOINF_ADJ>to READ</TOINF_ADJ>", "<TOINF_ADV>to REPAIR</TOINF_ADV>" (내부 강세 보존 - 대문자만)
+   - 금지: "to rePAIR" (혼합 대소문자), "re_PAIR" (언더스코어), "re-PAIR" (하이픈)
+   - 중요: 강세 표시는 반드시 대문자만 사용하세요. 언더스코어(_)나 다른 기호는 절대 금지입니다.
    
    ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
-   - 조동사(have, be, do, will, can 등) + 주동사의 조합은 "하나의 호흡 단위"입니다.
+   - 메인 동사가 조동사(have, be, do, will, can 등) + 주동사의 조합이면, 그 구 전체를 **하나의 호흡 단위**로 봅니다.
+   - 이 경우 주동사만 <VERB_형식> 태그로 감싸세요. 조동사는 태그 내부에만 포함하고 별도로 마킹하지 않습니다.
    - 예: "<VERB_3형>has been learning</VERB_3형>" → [호흡 단위] (내부 마커 절대 금지)
    - 예: "<VERB_3형>will continue</VERB_3형>" → [호흡 단위] (내부 마커 절대 금지)
    - 예: "<VERB_3형>is going</VERB_3형>" → [호흡 단위] (내부 마커 절대 금지)
@@ -248,8 +249,8 @@ const promptText = `
    
    구체적 예시:
    - ✓ "my DAUGHter • <VERB_3형>has been LEARNing</VERB_3형> • the UKEleLE • in an AFter-school program • for SIX years NOW"
-   - ✗ "my • DAUGHter • <VERB_3형>has</VERB_3형> • <VERB_3형>been</VERB_3형> • LEARNing • the • UKEleLE" (호흡 단위를 무시한 과도한 마커)
-   - ✗ "<VERB_3형>has • been</VERB_3형> learning" (동사 구 내부 마커 - 절대 금지)
+   - ✗ "RESearch on GRIT • <VERB_3형>shows</VERB_3형> how GENuine INterest • <VERB_5형>helps</VERB_5형> PEOple • <VERB_3형>stay enGAGED</VERB_3형> • and <VERB_3형>disCOVer</VERB_3형> new posiBILities" (구조: "discover"는 "stay engaged"와 대등하지만, 부정사 형태가 아님. 메인 동사는 "shows"와 "helps"만)
+   - ✗ "<VERB_3형>has</VERB_3형> • <VERB_3형>been</VERB_3형> learning" (동사 구 내부 마커 - 절대 금지, 한 덩어리로 마킹해야 함)
    - ✗ "down•TURN" (단어 내부 마커 - 절대 금지)
 
 8. [originalText] 필드:
@@ -540,13 +541,12 @@ ${text}
    - 원어민 화자의 강세(강조)를 대문자로 표시하세요 (예: "REAL", "ESTATE", "downTURN").
    
    ⭐⭐⭐ 동사 표시 (매우 중요):
-   - 문장 내 모든 동사를 <VERB_형식>동사</VERB_형식> 형식으로 감싸세요.
-   - 형식은 그 동사가 속한 문장(또는 절)의 형식을 나타냅니다: <VERB_1형>, <VERB_2형>, <VERB_3형>, <VERB_4형>, <VERB_5형>
-   - 복합 문장에서는 주절의 주동사는 주절의 형식을 사용하고, 종속절이나 보조 동사는 그들이 기능하는 문맥의 형식을 사용하세요.
-   - 동사는 주동사와 조동사, 보조동사 모두 포함합니다. 동명사나 분사는 제외합니다.
-   - 예: "<VERB_3형>has</VERB_3형> been <VERB_3형>learning</VERB_3형>" (두 동사 모두 마킹, 3형식)
-   - 예: "President Donald Trump <VERB_3형>has approved</VERB_3형> a deal" (구 동사도 함께 마킹)
-   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB_3형>HAS</VERB_3형>" 또는 "<VERB_3형>apPROVED</VERB_3형>"
+   - 문장의 **메인 동사(주절의 주동사)만** <VERB_형식>동사</VERB_형식> 형식으로 감싸세요.
+   - 형식은 그 메인 동사가 속한 문장의 형식을 나타냅니다: <VERB_1형>, <VERB_2형>, <VERB_3형>, <VERB_4형>, <VERB_5형>
+   - **절대 금지**: 보조 동사(have, be, do 등), 부정사, 분사, 종속절의 동사는 태그를 붙이면 안 됩니다.
+   - 예: "she <VERB_3형>has approved</VERB_3형> the plan <TOINF_NOM>to START</TOINF_NOM>" (메인 동사 "approved"만 마킹, "has"는 마킹 X, "START"는 부정사라 마킹 X)
+   - 예: "I <VERB_3형>saw</VERB_3형> him <TOINF_NOM>steal</TOINF_NOM> the money" (메인 동사 "saw"만 마킹, "steal"은 부정사)
+   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB_3형>HAS APPROVED</VERB_3형>"
    
    ⭐⭐⭐ To부정사 용법 표시 (매우 중요):
    - To부정사가 나타나면 반드시 다음 정확한 태그 형식을 사용하세요:
@@ -555,10 +555,11 @@ ${text}
      * 부사적용법: <TOINF_ADV>to infinitive</TOINF_ADV>
    - 중요: 태그 이름에 반드시 언더스코어(_)를 포함하세요. (TOINF_ADJ, TOINF_NOM, TOINF_ADV)
    - 중요: To부정사 내부에서도 강세(대문자)를 그대로 유지하세요.
-   - 예: "I <VERB_3형>have</VERB_3형> a book <TOINF_ADJ>to READ</TOINF_ADJ>" (형용사적, READ에 강세)
    - 예: "I <VERB_3형>want</VERB_3형> <TOINF_NOM>to LEARN</TOINF_NOM>" (명사적, LEARN에 강세)
    - 예: "She <VERB_3형>studied</VERB_3형> hard <TOINF_ADV>to PASS the exam</TOINF_ADV>" (부사적, PASS에 강세)
-   - 예: "<TOINF_ADJ>to READ</TOINF_ADJ>", "<TOINF_ADV>to rePAIR</TOINF_ADV>" (내부 강세 보존)
+   - 예: "<TOINF_ADJ>to READ</TOINF_ADJ>", "<TOINF_ADV>to REPAIR</TOINF_ADV>" (내부 강세 보존 - 대문자만)
+   - 금지: "to rePAIR" (혼합 대소문자), "re_PAIR" (언더스코어), "re-PAIR" (하이픈)
+   - 중요: 강세 표시는 반드시 대문자만 사용하세요. 언더스코어(_)나 다른 기호는 절대 금지입니다.
    
    ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
    - 조동사(have, be, do, will, can 등) + 주동사의 조합은 "하나의 호흡 단위"입니다.

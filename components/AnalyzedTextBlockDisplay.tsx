@@ -78,11 +78,13 @@ const renderToInfTag = (
 const renderRhythmText = (text: string) => {
   interface TextPart {
     text: string;
-    type: 'normal' | 'verb' | 'toinf-adj' | 'toinf-nom' | 'toinf-adv';
+    type: 'normal' | 'verb' | 'verb-1형' | 'verb-2형' | 'verb-3형' | 'verb-4형' | 'verb-5형' | 'toinf-adj' | 'toinf-nom' | 'toinf-adv';
+    verbForm?: string;
   }
 
   const parts: TextPart[] = [];
-  const tagRegex = /<VERB>(.*?)<\/VERB>|<TOINF_ADJ>(.*?)<\/TOINF_ADJ>|<TOINF_NOM>(.*?)<\/TOINF_NOM>|<TOINF_ADV>(.*?)<\/TOINF_ADV>/g;
+  // Updated regex to capture verb forms
+  const tagRegex = /<VERB_([1-5]형)>(.*?)<\/VERB_\1>|<VERB>(.*?)<\/VERB>|<TOINF_ADJ>(.*?)<\/TOINF_ADJ>|<TOINF_NOM>(.*?)<\/TOINF_NOM>|<TOINF_ADV>(.*?)<\/TOINF_ADV>/g;
   let lastIndex = 0;
   let match;
 
@@ -92,13 +94,19 @@ const renderRhythmText = (text: string) => {
     }
 
     if (match[1] !== undefined) {
-      parts.push({ text: match[1], type: 'verb' });
-    } else if (match[2] !== undefined) {
-      parts.push({ text: match[2], type: 'toinf-adj' });
+      // New format: <VERB_형식>text</VERB_형식>
+      const form = match[1];
+      const verbText = match[2];
+      parts.push({ text: verbText, type: `verb-${form}` as any, verbForm: form });
     } else if (match[3] !== undefined) {
-      parts.push({ text: match[3], type: 'toinf-nom' });
+      // Old format: <VERB>text</VERB>
+      parts.push({ text: match[3], type: 'verb' });
     } else if (match[4] !== undefined) {
-      parts.push({ text: match[4], type: 'toinf-adv' });
+      parts.push({ text: match[4], type: 'toinf-adj' });
+    } else if (match[5] !== undefined) {
+      parts.push({ text: match[5], type: 'toinf-nom' });
+    } else if (match[6] !== undefined) {
+      parts.push({ text: match[6], type: 'toinf-adv' });
     }
 
     lastIndex = match.index + match[0].length;
@@ -109,6 +117,18 @@ const renderRhythmText = (text: string) => {
   }
 
   return parts.map((part, pIdx) => {
+    // Handle verbs with forms
+    if (part.type.startsWith('verb-')) {
+      const form = part.verbForm || '';
+      return (
+        <span key={`verb-${pIdx}`} className="text-red-600 font-semibold mx-[4px]" title={form}>
+          {part.text}
+          <span className="text-xs text-red-500 font-bold ml-0.5">({form})</span>
+        </span>
+      );
+    }
+
+    // Handle old format verbs
     if (part.type === 'verb') {
       return (
         <span key={`verb-${pIdx}`} className="text-red-600 font-semibold mx-[4px]">
@@ -181,6 +201,16 @@ const AnalyzedTextBlockDisplay: React.FC<AnalyzedTextBlockDisplayProps> = ({
                 key={pIdx}
                 className="text-slate-700 leading-7 sm:leading-8 text-sm sm:text-[17px]"
               >
+                {/* 문장 형식 배지 - 각 문단 상단에 표시 */}
+                {block.forms && block.forms[pIdx] && (
+                  <div className="mb-2 inline-block">
+                    <span className="inline-block bg-gradient-to-r from-purple-100 to-purple-50 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full border border-purple-200">
+                      {block.forms[pIdx]}
+                    </span>
+                  </div>
+                )}
+                {block.forms && block.forms[pIdx] && <div className="mb-2" />}
+                
                 {paragraph.map((sentence, sIdx) => (
                   <span
                     key={sIdx}

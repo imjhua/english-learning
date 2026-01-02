@@ -1,7 +1,9 @@
 
 export interface TextBlock {
   source: string;
+  title?: string;
   paragraphs: string[][];
+  forms?: string[]; // Array of sentence forms (e.g., "1형식", "3형식")
 }
 
 export interface RhythmAnalysisResult {

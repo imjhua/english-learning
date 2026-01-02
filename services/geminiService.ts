@@ -106,20 +106,36 @@ const promptText = `
 6. 문단(시각적 블록) 구조를 정확히 그대로 유지하세요.
    - 각 문단은 문장들의 리스트 형태로 반환해야 합니다.
 
-7. [fullTextBlocks] 필드: ⭐ 리듬 마커(•)가 가장 중요한 요소입니다. 반드시 정확하게 적용하세요.
+7. **[forms] 필드 (새로 추가됨 - 매우 중요)**:
+   - 각 문장의 "5가지 문장 형식"을 정확히 분류하세요.
+   - 형식 분류 기준:
+     * "1형식": S + V (동사만 있고 보어나 목적어 없음) - 예: "She sleeps."
+     * "2형식": S + V + C (주어 + 동사 + 보어) - 예: "She is tired.", "He became a doctor."
+     * "3형식": S + V + O (주어 + 동사 + 목적어) - 예: "She likes coffee.", "He reads books."
+     * "4형식": S + V + I.O. + D.O. (주어 + 동사 + 간접목적어 + 직접목적어) - 예: "She gave me a book.", "He showed her the document."
+     * "5형식": S + V + O + C (주어 + 동사 + 목적어 + 목적보어) - 예: "She made him happy.", "I found the book interesting."
+   - 복합 문장이나 여러 절이 있는 경우, 주절(main clause)의 형식만 분류하세요.
+   - [forms] 배열은 각 단락별로 문장 개수와 일치해야 합니다.
+   - 예: paragraphs에 2개 문장이 있으면 forms도 2개의 형식이 있어야 합니다.
+   - 예시: ["1형식", "3형식", "2형식"]
+
+8. [fullTextBlocks] 필드: ⭐ 리듬 마커(•)가 가장 중요한 요소입니다. 반드시 정확하게 적용하세요.
    - 각 이미지에 대해 다음 정보를 포함하세요:
      - "source": 이미지 이름 또는 ID
      - "title": 메인 제목 또는 헤드라인 텍스트 (없을 경우 빈 문자열)
      - "paragraphs": 리듬 마커(•)가 포함된 문장 리스트로 이루어진 문단들의 리스트
+     - "forms": 각 문단의 문장 형식 배열 (예: ["1형식", "3형식"])
    - 각 문장에 대해 리듬 분석을 적용하세요.
    - 원어민 화자의 강세(강조)를 대문자로 표시하세요 (예: "REAL", "ESTATE", "downTURN").
    
    ⭐⭐⭐ 동사 표시 (매우 중요):
-   - 문장 내 모든 동사를 <VERB>동사</VERB> 형식으로 감싸세요.
+   - 문장 내 모든 동사를 <VERB_형식>동사</VERB_형식> 형식으로 감싸세요.
+   - 형식은 그 동사가 속한 문장(또는 절)의 형식을 나타냅니다: <VERB_1형>, <VERB_2형>, <VERB_3형>, <VERB_4형>, <VERB_5형>
+   - 복합 문장에서는 주절의 주동사는 주절의 형식을 사용하고, 종속절이나 보조 동사는 그들이 기능하는 문맥의 형식을 사용하세요.
    - 동사는 주동사와 조동사, 보조동사 모두 포함합니다. 동명사나 분사는 제외합니다.
-   - 예: "<VERB>has</VERB> been <VERB>learning</VERB>" (두 동사 모두 마킹)
-   - 예: "President Donald Trump <VERB>has approved</VERB> a deal" (구 동사도 함께 마킹)
-   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB>HAS</VERB>" 또는 "<VERB>apPROVED</VERB>"
+   - 예: "<VERB_3형>has</VERB_3형> been <VERB_3형>learning</VERB_3형>" (두 동사 모두 마킹, 3형식)
+   - 예: "President Donald Trump <VERB_3형>has approved</VERB_3형> a deal" (구 동사도 함께 마킹)
+   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB_3형>HAS</VERB_3형>" 또는 "<VERB_3형>apPROVED</VERB_3형>"
    
    ⭐⭐⭐ To부정사 용법 표시 (매우 중요):
    - To부정사가 나타나면 반드시 다음 정확한 태그 형식을 사용하세요:
@@ -128,19 +144,19 @@ const promptText = `
      * 부사적용법: <TOINF_ADV>to infinitive</TOINF_ADV>
    - 중요: 태그 이름에 반드시 언더스코어(_)를 포함하세요. (TOINF_ADJ, TOINF_NOM, TOINF_ADV)
    - 중요: To부정사 내부에서도 강세(대문자)를 그대로 유지하세요.
-   - 예: "I <VERB>have</VERB> a book <TOINF_ADJ>to READ</TOINF_ADJ>" (형용사적, READ에 강세)
-   - 예: "I <VERB>want</VERB> <TOINF_NOM>to LEARN</TOINF_NOM>" (명사적, LEARN에 강세)
-   - 예: "She <VERB>studied</VERB> hard <TOINF_ADV>to PASS the exam</TOINF_ADV>" (부사적, PASS에 강세)
+   - 예: "I <VERB_3형>have</VERB_3형> a book <TOINF_ADJ>to READ</TOINF_ADJ>" (형용사적, READ에 강세)
+   - 예: "I <VERB_3형>want</VERB_3형> <TOINF_NOM>to LEARN</TOINF_NOM>" (명사적, LEARN에 강세)
+   - 예: "She <VERB_3형>studied</VERB_3형> hard <TOINF_ADV>to PASS the exam</TOINF_ADV>" (부사적, PASS에 강세)
    - 예: "<TOINF_ADJ>to READ</TOINF_ADJ>", "<TOINF_ADV>to rePAIR</TOINF_ADV>" (내부 강세 보존)
    
    ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
    - 조동사(have, be, do, will, can 등) + 주동사의 조합은 "하나의 호흡 단위"입니다.
-   - 예: "<VERB>has been learning</VERB>" → [호흡 단위] (내부 마커 절대 금지)
-   - 예: "<VERB>will continue</VERB>" → [호흡 단위] (내부 마커 절대 금지)
-   - 예: "<VERB>is going</VERB>" → [호흡 단위] (내부 마커 절대 금지)
+   - 예: "<VERB_3형>has been learning</VERB_3형>" → [호흡 단위] (내부 마커 절대 금지)
+   - 예: "<VERB_3형>will continue</VERB_3형>" → [호흡 단위] (내부 마커 절대 금지)
+   - 예: "<VERB_3형>is going</VERB_3형>" → [호흡 단위] (내부 마커 절대 금지)
    - 동사 구 내부의 조동사-동사 사이에는 절대 마커를 넣으면 안 됩니다.
    - 동사 구 뒤의 목적어와의 경계에만 마커를 넣을 수 있습니다.
-   - 예: "she <VERB>has been learning</VERB> • the piano" (동사 구 내부 마커 X, 뒤 마커 O)
+   - 예: "she <VERB_3형>has been learning</VERB_3형> • the piano" (동사 구 내부 마커 X, 뒤 마커 O)
    
    【호흡 단위의 정의】
    - 한 호흡 단위 = 원어민이 쉬지 않고 한 번에 읽을 수 있는 의미 있는 구(phrase)
@@ -218,9 +234,9 @@ const promptText = `
    - "President • Donald Trump" X (같은 호흡이면 마커 불가 - 틀림)
    
    【올바른 사례】
-   - "President Donald Trump • has been learning • the piano"
+   - "President Donald Trump • <VERB_3형>has been learning</VERB_3형> • the piano"
      → [호흡1: President Donald Trump] • [호흡2: has been learning] • [호흡3: the piano]
-   - "my DAUGHter • <VERB>has been LEARNing</VERB> • the UKEleLE"
+   - "my DAUGHter • <VERB_3형>has been LEARNing</VERB_3형> • the UKEleLE"
      → [호흡1: my DAUGHter] • [호흡2: has been learning] • [호흡3: the UKEleLE]
    - China's (한 호흡이면): "CHI • na's" X (틀림), "CHI na's" O (올바름)
    - 영어는 공백 기준으로 한 호흡을 구성하므로, 공백이 있으면 그 공백 위치에만 마커를 고려해야 합니다.
@@ -231,9 +247,9 @@ const promptText = `
    - 예: "my DAUGHter <VERB>has been LEARNing</VERB> the UKEleLE" (마커 없음, 강조만 적용)
    
    구체적 예시:
-   - ✓ "my DAUGHter • <VERB>has been LEARNing</VERB> • the UKEleLE • in an AFter-school program • for SIX years NOW"
-   - ✗ "my • DAUGHter • <VERB>has</VERB> • <VERB>been</VERB> • LEARNing • the • UKEleLE" (호흡 단위를 무시한 과도한 마커)
-   - ✗ "<VERB>has • been</VERB> learning" (동사 구 내부 마커 - 절대 금지)
+   - ✓ "my DAUGHter • <VERB_3형>has been LEARNing</VERB_3형> • the UKEleLE • in an AFter-school program • for SIX years NOW"
+   - ✗ "my • DAUGHter • <VERB_3형>has</VERB_3형> • <VERB_3형>been</VERB_3형> • LEARNing • the • UKEleLE" (호흡 단위를 무시한 과도한 마커)
+   - ✗ "<VERB_3형>has • been</VERB_3형> learning" (동사 구 내부 마커 - 절대 금지)
    - ✗ "down•TURN" (단어 내부 마커 - 절대 금지)
 
 8. [originalText] 필드:
@@ -267,7 +283,7 @@ const promptText = `
          "title": "TikTok Deal",
          "paragraphs": [
            [
-             "PREsident DONald TRUMP • <VERB>has apPROVED</VERB> a DEAL alLOWing TikTok • <VERB>to conTINue</VERB> OPerating in the uNIted STATES • under a NEW joint VENture STRUCture."
+             "PREsident DONald TRUMP • <VERB_3형>has apPROVED</VERB_3형> a DEAL alLOWing TikTok • <VERB_3형>to conTINue</VERB_3형> OPerating in the uNIted STATES • under a NEW joint VENture STRUCture."
            ]
          ]
        }
@@ -307,6 +323,11 @@ const promptText = `
               },
               description: "List of visual paragraphs"
             },
+            forms: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: "Array of sentence forms (e.g., '1형식', '2형식', '3형식', '4형식', '5형식') corresponding to each paragraph/sentence group"
+            }
           },
           required: ["source", "title", "paragraphs"],
         },
@@ -324,6 +345,11 @@ const promptText = `
                 type: Type.ARRAY,
                 items: { type: Type.STRING }
               }
+            },
+            forms: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: "Array of sentence forms (e.g., '1형식', '2형식', '3형식', '4형식', '5형식')"
             }
           },
           required: ["source", "title", "paragraphs"]
@@ -514,11 +540,13 @@ ${text}
    - 원어민 화자의 강세(강조)를 대문자로 표시하세요 (예: "REAL", "ESTATE", "downTURN").
    
    ⭐⭐⭐ 동사 표시 (매우 중요):
-   - 문장 내 모든 동사를 <VERB>동사</VERB> 형식으로 감싸세요.
+   - 문장 내 모든 동사를 <VERB_형식>동사</VERB_형식> 형식으로 감싸세요.
+   - 형식은 그 동사가 속한 문장(또는 절)의 형식을 나타냅니다: <VERB_1형>, <VERB_2형>, <VERB_3형>, <VERB_4형>, <VERB_5형>
+   - 복합 문장에서는 주절의 주동사는 주절의 형식을 사용하고, 종속절이나 보조 동사는 그들이 기능하는 문맥의 형식을 사용하세요.
    - 동사는 주동사와 조동사, 보조동사 모두 포함합니다. 동명사나 분사는 제외합니다.
-   - 예: "<VERB>has</VERB> been <VERB>learning</VERB>" (두 동사 모두 마킹)
-   - 예: "President Donald Trump <VERB>has approved</VERB> a deal" (구 동사도 함께 마킹)
-   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB>HAS</VERB>" 또는 "<VERB>apPROVED</VERB>"
+   - 예: "<VERB_3형>has</VERB_3형> been <VERB_3형>learning</VERB_3형>" (두 동사 모두 마킹, 3형식)
+   - 예: "President Donald Trump <VERB_3형>has approved</VERB_3형> a deal" (구 동사도 함께 마킹)
+   - 동사 내부에는 대문자 강조가 유지되어야 합니다. 예: "<VERB_3형>HAS</VERB_3형>" 또는 "<VERB_3형>apPROVED</VERB_3형>"
    
    ⭐⭐⭐ To부정사 용법 표시 (매우 중요):
    - To부정사가 나타나면 반드시 다음 정확한 태그 형식을 사용하세요:
@@ -527,15 +555,15 @@ ${text}
      * 부사적용법: <TOINF_ADV>to infinitive</TOINF_ADV>
    - 중요: 태그 이름에 반드시 언더스코어(_)를 포함하세요. (TOINF_ADJ, TOINF_NOM, TOINF_ADV)
    - 중요: To부정사 내부에서도 강세(대문자)를 그대로 유지하세요.
-   - 예: "I <VERB>have</VERB> a book <TOINF_ADJ>to READ</TOINF_ADJ>" (형용사적, READ에 강세)
-   - 예: "I <VERB>want</VERB> <TOINF_NOM>to LEARN</TOINF_NOM>" (명사적, LEARN에 강세)
-   - 예: "She <VERB>studied</VERB> hard <TOINF_ADV>to PASS the exam</TOINF_ADV>" (부사적, PASS에 강세)
+   - 예: "I <VERB_3형>have</VERB_3형> a book <TOINF_ADJ>to READ</TOINF_ADJ>" (형용사적, READ에 강세)
+   - 예: "I <VERB_3형>want</VERB_3형> <TOINF_NOM>to LEARN</TOINF_NOM>" (명사적, LEARN에 강세)
+   - 예: "She <VERB_3형>studied</VERB_3형> hard <TOINF_ADV>to PASS the exam</TOINF_ADV>" (부사적, PASS에 강세)
    - 예: "<TOINF_ADJ>to READ</TOINF_ADJ>", "<TOINF_ADV>to rePAIR</TOINF_ADV>" (내부 강세 보존)
    
    ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
    - 조동사(have, be, do, will, can 등) + 주동사의 조합은 "하나의 호흡 단위"입니다.
-   - 예: "<VERB>has been learning</VERB>" → [호흡 단위] (내부 마커 절대 금지)
-   - 예: "<VERB>will continue</VERB>" → [호흡 단위] (내부 마커 절대 금지)
+   - 예: "<VERB_3형>has been learning</VERB_3형>" → [호흡 단위] (내부 마커 절대 금지)
+   - 예: "<VERB_3형>will continue</VERB_3형>" → [호흡 단위] (내부 마커 절대 금지)
    - 동사 구 내부의 조동사-동사 사이에는 절대 마커를 넣으면 안 됩니다.
    
    ⭐⭐⭐ 리듬 마커(•)의 정의 (매우 중요):
@@ -612,18 +640,32 @@ ${text}
    - 마커(•)는 오직 두 호흡 단위 경계의 공백에만 올 수 있습니다.
    - 예: "critical thinking" → "CRItical • THINKing" (마커는 호흡 경계에만)
 
-4. [fullTextBlocks] 필드:
+4. **[forms] 필드 (새로 추가됨 - 매우 중요)**:
+   - 각 문장의 "5가지 문장 형식"을 정확히 분류하세요.
+   - 형식 분류 기준:
+     * "1형식": S + V (동사만 있고 보어나 목적어 없음) - 예: "She sleeps."
+     * "2형식": S + V + C (주어 + 동사 + 보어) - 예: "She is tired.", "He became a doctor."
+     * "3형식": S + V + O (주어 + 동사 + 목적어) - 예: "She likes coffee.", "He reads books."
+     * "4형식": S + V + I.O. + D.O. (주어 + 동사 + 간접목적어 + 직접목적어) - 예: "She gave me a book.", "He showed her the document."
+     * "5형식": S + V + O + C (주어 + 동사 + 목적어 + 목적보어) - 예: "She made him happy.", "I found the book interesting."
+   - 복합 문장이나 여러 절이 있는 경우, 주절(main clause)의 형식만 분류하세요.
+   - [forms] 배열은 각 단락의 문장 개수와 일치해야 합니다.
+   - 예: 5개 문장이 있으면 forms도 5개의 형식이 있어야 합니다.
+   - 예시: ["1형식", "3형식", "2형식", "3형식", "5형식"]
+
+5. [fullTextBlocks] 필드:
    - "source": "Direct Input"
    - "title": "" (빈 문자열)
-   - "paragraphs": 리듬 마커(•)가 포함된 문장 리스트
+   - "paragraphs": 리듬 마커(•)가 포함된 문장 리스트를 하나의 문단으로 반환
+   - "forms": 각 문장의 형식 배열
 
-5. [originalText] 필드:
+6. [originalText] 필드:
    - 반드시 fullTextBlocks와 동일한 JSON 구조로 반환하세요.
    - 각 블록의 텍스트(paragraphs)는 원본 입력 텍스트를 사용하되, 각주 번호나 기호는 제거하세요.
    - 대소문자, 공백, 줄바꿈, 구두점을 포함한 모든 원본 서식을 유지하세요.
    - 리듬 마커(•), 대문자 변형, 강조 표시, 추가 기호를 절대 적용하지 마세요.
 
-6. 결과를 다음 JSON 형식으로만 반환하세요 (마크다운 코드블록 없음):
+7. 결과를 다음 JSON 형식으로만 반환하세요 (마크다운 코드블록 없음):
 {
   "fullTextBlocks": [
     {
@@ -665,6 +707,11 @@ ${text}
                 items: { type: Type.STRING },
               },
             },
+            forms: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: "Array of sentence forms (e.g., '1형식', '2형식', '3형식', '4형식', '5형식')"
+            }
           },
           required: ["source", "title", "paragraphs"],
         },
@@ -683,6 +730,10 @@ ${text}
                 items: { type: Type.STRING },
               },
             },
+            forms: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            }
           },
           required: ["source", "title", "paragraphs"],
         },

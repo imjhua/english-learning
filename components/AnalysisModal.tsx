@@ -27,12 +27,12 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
 
   if (!isOpen) return null;
 
-  // Helper to render sentence with bold verbs
-  const renderHighlightedSentence = (sentence: string, mainVerb: string, otherVerbs: string[]) => {
+  // Helper to render sentence with bold verbs and form labels
+  const renderHighlightedSentence = (sentence: string, mainVerb: string, otherVerbs: string[], form: string) => {
     if (!sentence) return sentence;
 
     // Remove all XML tags (<VERB>, </VERB>, <TOINF_ADJ>, etc.)
-    const cleanedSentence = sentence.replace(/<\/?[A-Z_]+>/g, '');
+    const cleanedSentence = sentence.replace(/<\/?[A-Z_0-9]+>/g, '');
 
     // 원본 대소문자 그대로 사용
     const words = cleanedSentence.split(' ');
@@ -62,7 +62,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
       }
 
       return (
-        <span key={idx} className={className}>
+        <span key={idx} className={className} title={isMainVerb ? `주동사 (${form})` : (isOtherVerb ? '다른 동사' : '')}>
           {displayWord}{' '}
         </span>
       );
@@ -185,7 +185,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, isLoadin
               {/* 1. Sentence with Verbs */}
               <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
                 <p className="text-xl leading-relaxed font-medium">
-                  {renderHighlightedSentence(data.sentence, data.mainVerb, data.otherVerbs)}
+                  {renderHighlightedSentence(data.sentence, data.mainVerb, data.otherVerbs, data.form)}
                 </p>
                 <div className="mt-3 flex items-center justify-center gap-4 text-[10px] uppercase font-bold tracking-wide">
                   <div className="flex items-center gap-1.5 text-red-600">

@@ -78,13 +78,13 @@ const renderToInfTag = (
 const renderRhythmText = (text: string) => {
   interface TextPart {
     text: string;
-    type: 'normal' | 'verb' | 'verb-1형' | 'verb-2형' | 'verb-3형' | 'verb-4형' | 'verb-5형' | 'toinf-adj' | 'toinf-nom' | 'toinf-adv';
+    type: 'normal' | 'verb' | 'verb-1형' | 'verb-2형' | 'verb-3형' | 'verb-4형' | 'verb-5형' | 'toinf-adj' | 'toinf-nom' | 'toinf-adv' | 'idiom';
     verbForm?: string;
   }
 
   const parts: TextPart[] = [];
-  // Updated regex to capture verb forms
-  const tagRegex = /<VERB_([1-5]형)>(.*?)<\/VERB_\1>|<VERB>(.*?)<\/VERB>|<TOINF_ADJ>(.*?)<\/TOINF_ADJ>|<TOINF_NOM>(.*?)<\/TOINF_NOM>|<TOINF_ADV>(.*?)<\/TOINF_ADV>/g;
+  // Updated regex to capture verb forms, toinf, and idioms
+  const tagRegex = /<IDIOM>(.*?)<\/IDIOM>|<VERB_([1-5]형)>(.*?)<\/VERB_\2>|<VERB>(.*?)<\/VERB>|<TOINF_ADJ>(.*?)<\/TOINF_ADJ>|<TOINF_NOM>(.*?)<\/TOINF_NOM>|<TOINF_ADV>(.*?)<\/TOINF_ADV>/g;
   let lastIndex = 0;
   let match;
 
@@ -94,19 +94,22 @@ const renderRhythmText = (text: string) => {
     }
 
     if (match[1] !== undefined) {
+      // IDIOM tag
+      parts.push({ text: match[1], type: 'idiom' });
+    } else if (match[2] !== undefined) {
       // New format: <VERB_형식>text</VERB_형식>
-      const form = match[1];
-      const verbText = match[2];
+      const form = match[2];
+      const verbText = match[3];
       parts.push({ text: verbText, type: `verb-${form}` as any, verbForm: form });
-    } else if (match[3] !== undefined) {
-      // Old format: <VERB>text</VERB>
-      parts.push({ text: match[3], type: 'verb' });
     } else if (match[4] !== undefined) {
-      parts.push({ text: match[4], type: 'toinf-adj' });
+      // Old format: <VERB>text</VERB>
+      parts.push({ text: match[4], type: 'verb' });
     } else if (match[5] !== undefined) {
-      parts.push({ text: match[5], type: 'toinf-nom' });
+      parts.push({ text: match[5], type: 'toinf-adj' });
     } else if (match[6] !== undefined) {
-      parts.push({ text: match[6], type: 'toinf-adv' });
+      parts.push({ text: match[6], type: 'toinf-nom' });
+    } else if (match[7] !== undefined) {
+      parts.push({ text: match[7], type: 'toinf-adv' });
     }
 
     lastIndex = match.index + match[0].length;
@@ -117,6 +120,15 @@ const renderRhythmText = (text: string) => {
   }
 
   return parts.map((part, pIdx) => {
+    // Handle idioms
+    if (part.type === 'idiom') {
+      return (
+        <span key={`idiom-${pIdx}`} className="decoration-blue-500 decoration-2 mx-[4px]" title="숙어">
+          {renderWordsWithStress(part.text, 'font-extrabold text-blue-600 scale-105 origin-center underline')}
+        </span>
+      );
+    }
+
     // Handle verbs with forms
     if (part.type.startsWith('verb-')) {
       const form = part.verbForm || '';

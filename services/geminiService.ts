@@ -149,6 +149,22 @@ const promptText = `
    - 금지: "to rePAIR" (혼합 대소문자), "re_PAIR" (언더스코어), "re-PAIR" (하이픈)
    - 중요: 강세 표시는 반드시 대문자만 사용하세요. 언더스코어(_)나 다른 기호는 절대 금지입니다.
    
+   ⭐⭐⭐ 숙어(Idiom) 표시 (매우 중요):
+   - 문장에 숙어(phrasal verb, 관용 표현)가 있으면 반드시 <IDIOM>숙어</IDIOM> 형식으로 태그를 붙이세요.
+   - 숙어 판별 기준: 한 단어의 동사와 전치사/부사가 결합해 새로운 의미를 이루는 경우
+   - 일반 동사와 전치사의 조합 예: "come across" (우연히 만나다), "run into" (우연히 만나다), "put into" (노력을 쏟다), "pop into" (갑자기 떠오르다/나타나다)
+   - 예: "He <VERB_3형>gave</VERB_3형> <IDIOM>up smoking</IDIOM>" (포기하다)
+   - 예: "I <VERB_3형>look</VERB_3형> <IDIOM>forward to</IDIOM> the meeting" (기다리다)
+   - 예: "She <VERB_3형>came</VERB_3형> <IDIOM>across</IDIOM> an old friend" (우연히 만나다)
+   - 예: "They <VERB_3형>put</VERB_3형> <IDIOM>up with</IDIOM> the noise" (견디다)
+   - 예: "The idea <VERB_3형>popped</VERB_3형> <IDIOM>into</IDIOM> my head" (갑자기 떠오르다)
+   - 예: "He <VERB_3형>put</VERB_3형> <IDIOM>effort into</IDIOM> the project" (노력을 쏟다)
+   - 예: "She <VERB_3형>ran</VERB_3형> <IDIOM>into</IDIOM> an old classmate" (우연히 만나다)
+   - 예: "I <VERB_3형>look</VERB_3형> <IDIOM>after</IDIOM> my siblings" (돌보다)
+   - 예: "He <VERB_3형>got</VERB_3형> <IDIOM>over</IDIOM> his illness" (극복하다)
+   - 숙어 내부의 강세(대문자)는 그대로 유지하세요: <IDIOM>GIVE UP</IDIOM>, <IDIOM>look FORward TO</IDIOM>
+   - 숙어가 여러 단어로 이루어진 경우: <IDIOM>come across</IDIOM>, <IDIOM>put up with</IDIOM>, <IDIOM>look forward to</IDIOM>, <IDIOM>pop into</IDIOM>, <IDIOM>put effort into</IDIOM>
+   
    ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
    - 메인 동사가 조동사(have, be, do, will, can 등) + 주동사의 조합이면, 그 구 전체를 **하나의 호흡 단위**로 봅니다.
    - 이 경우 주동사만 <VERB_형식> 태그로 감싸세요. 조동사는 태그 내부에만 포함하고 별도로 마킹하지 않습니다.
@@ -560,6 +576,15 @@ ${text}
    - 예: "<TOINF_ADJ>to READ</TOINF_ADJ>", "<TOINF_ADV>to REPAIR</TOINF_ADV>" (내부 강세 보존 - 대문자만)
    - 금지: "to rePAIR" (혼합 대소문자), "re_PAIR" (언더스코어), "re-PAIR" (하이픈)
    - 중요: 강세 표시는 반드시 대문자만 사용하세요. 언더스코어(_)나 다른 기호는 절대 금지입니다.
+   
+   ⭐⭐⭐ 숙어(Idiom) 표시 (매우 중요):
+   - 문장에 숙어(phrasal verb, 관용 표현)가 있으면 반드시 <IDIOM>숙어</IDIOM> 형식으로 태그를 붙이세요.
+   - 예: "He <VERB_3형>gave</VERB_3형> <IDIOM>up smoking</IDIOM>" (포기하다)
+   - 예: "I <VERB_3형>look</VERB_3형> <IDIOM>forward to</IDIOM> the meeting" (기다리다)
+   - 예: "She <VERB_3형>came</VERB_3형> <IDIOM>across</IDIOM> an old friend" (우연히 만나다)
+   - 예: "They <VERB_3형>put</VERB_3형> <IDIOM>up with</IDIOM> the noise" (견디다)
+   - 숙어 내부의 강세(대문자)는 그대로 유지하세요: <IDIOM>GIVE UP</IDIOM>, <IDIOM>look FORward TO</IDIOM>
+   - 숙어가 여러 단어로 이루어진 경우: <IDIOM>come across</IDIOM>, <IDIOM>put up with</IDIOM>
    
    ⭐⭐⭐ 동사 구(verb phrase) 처리 (매우 중요):
    - 조동사(have, be, do, will, can 등) + 주동사의 조합은 "하나의 호흡 단위"입니다.
